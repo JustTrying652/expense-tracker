@@ -1,30 +1,36 @@
 import { useCallback, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { PieChart } from 'react-native-chart-kit';
 import { getTransactionsByMonth, getCategories } from '../db/storage';
 import { Transaction, Category } from '../types';
-import { TouchableOpacity, Alert } from 'react-native';
 import * as Print from 'expo-print';
-import * as Sharing from 'expo-sharing';
 import { buildReportHtml } from '../utils/pdfTemplate';
 
 const screenWidth = Dimensions.get('window').width;
 
 export default function ReportsScreen() {
   const now = new Date();
+  const isCurrentMonth = viewDate.getFullYear() === now.getFullYear() && viewDate.getMonth() === now.getMonth();
+  const [viewDate, setViewDate] = useState(new Date());
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
   useFocusEffect(
     useCallback(() => {
       (async () => {
-        setTransactions(await getTransactionsByMonth(now.getFullYear(), now.getMonth() + 1));
+        setTransactions(await getTransactionsByMonth(viewDate.getFullYear(), viewDate.getMonth() + 1));
         setCategories(await getCategories());
       })();
-    }, [])
+    }, [viewDate])
   );
-
+  function goToPrevMonth() {
+    setViewDate((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1));
+  }
+  function goToNextMonth() {
+    setViewDate((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
+  }
+  const monthLabel = `${viewDate.toLocaleString('default', { month: 'long' })} ${viewDate.getFullYear()}`;
   const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c]));
 
   const totalIncome = transactions.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0);
@@ -48,9 +54,7 @@ export default function ReportsScreen() {
     };
   });
   async function handleExport() {
-    const monthLabel = `${now.toLocaleString('default', { month: 'long' })} ${now.getFullYear()}`;
     const html = buildReportHtml({ transactions, categories, monthLabel });
-
     try {
       await Print.printAsync({ html });
     } catch (err) {
@@ -60,9 +64,15 @@ export default function ReportsScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 16 }}>
-      <Text style={styles.title}>
-        {now.toLocaleString('default', { month: 'long' })} {now.getFullYear()}
-      </Text>
+      <View style={styles.monthNav}>
+        <TouchableOpacity onPress={goToPrevMonth} style={styles.navBtn}>
+          <Text style={styles.navBtnText}>‹</Text>
+        </TouchableOpacity>
+        <Text style={styles.title}>{monthLabel}</Text>
+        <TouchableOpacity onPress={goToNextMonth} style={styles.navBtn} disabled={isCurrentMonth}>
+          <Text style={[styles.navBtnText, isCurrentMonth && { opacity: 0.3 }]}>›</Text>
+        </TouchableOpacity>
+      </View>
         <TouchableOpacity style={styles.exportBtn} onPress={handleExport}>
         <Text style={styles.exportBtnText}>Export as PDF</Text>
       </TouchableOpacity>
@@ -101,6 +111,9 @@ export default function ReportsScreen() {
 }
 
 const styles = StyleSheet.create({
+  monthNav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  navBtn: { paddingHorizontal: 20, paddingVertical: 4 },
+  navBtnText: { fontSize: 24, color: '#111827', fontWeight: '600' },
     exportBtn: { backgroundColor: '#111827', padding: 12, borderRadius: 8, alignItems: 'center', marginBottom: 16 },
   exportBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
   container: { flex: 1, backgroundColor: '#fff' },
