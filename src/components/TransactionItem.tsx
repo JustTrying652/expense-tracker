@@ -1,13 +1,22 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Transaction, Category } from '../types';
 
 interface Props {
   transaction: Transaction;
   category?: Category;
+  onDelete: (id: number) => void;
 }
 
-export default function TransactionItem({ transaction, category }: Props) {
+export default function TransactionItem({ transaction, category, onDelete }: Props) {
   const isIncome = transaction.type === 'income';
+
+  function confirmDelete() {
+    Alert.alert('Delete transaction?', 'This cannot be undone.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: () => onDelete(transaction.id) },
+    ]);
+  }
+
   return (
     <View style={styles.row}>
       <View style={[styles.dot, { backgroundColor: category?.color ?? '#999' }]} />
@@ -19,6 +28,9 @@ export default function TransactionItem({ transaction, category }: Props) {
       <Text style={[styles.amount, { color: isIncome ? '#16a34a' : '#dc2626' }]}>
         {isIncome ? '+' : '-'}KES {transaction.amount.toLocaleString()}
       </Text>
+      <TouchableOpacity onPress={confirmDelete} style={styles.deleteBtn}>
+        <Text style={styles.deleteBtnText}>✕</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -30,5 +42,7 @@ const styles = StyleSheet.create({
   category: { fontSize: 15, fontWeight: '600', color: '#111' },
   note: { fontSize: 13, color: '#666', marginTop: 2 },
   date: { fontSize: 12, color: '#999', marginTop: 2 },
-  amount: { fontSize: 15, fontWeight: '700' },
+  amount: { fontSize: 15, fontWeight: '700', marginRight: 10 },
+  deleteBtn: { padding: 6 },
+  deleteBtnText: { fontSize: 16, color: '#9ca3af', fontWeight: '600' },
 });
