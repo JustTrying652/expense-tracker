@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { View, FlatList, Text, StyleSheet } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { getTransactions, getCategories } from '../db/storage';
+import { getTransactions, getCategories, deleteTransaction } from '../db/storage';
 import { Transaction, Category } from '../types';
 import TransactionItem from '../components/TransactionItem';
 
@@ -26,7 +26,10 @@ export default function HomeScreen() {
   );
 
   const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c]));
-
+  async function handleDelete(id: number) {
+    await deleteTransaction(id);
+    setTransactions(await getTransactions());
+  }
   return (
     <View style={styles.container}>
       <View style={styles.balanceCard}>
@@ -37,7 +40,7 @@ export default function HomeScreen() {
         data={transactions}
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => (
-          <TransactionItem transaction={item} category={categoryMap[item.categoryId]} />
+          <TransactionItem transaction={item} category={categoryMap[item.categoryId]} onDelete={handleDelete} />
         )}
         ListEmptyComponent={
           <Text style={styles.empty}>No transactions yet. Add your first one below.</Text>
