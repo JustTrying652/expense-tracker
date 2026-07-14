@@ -1,0 +1,26 @@
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import HomeScreen from '../screens/HomeScreen';
+import AddTransactionScreen from '../screens/AddTransactionScreen';
+import ReportsScreen from '../screens/ReportsScreen';
+
+const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
+
+function HomeStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="HomeList" component={HomeScreen} options={{ title: 'Transactions' }} />
+    </Stack.Navigator>
+  );
+}
+
+export default function RootNavigator() {
+  return (
+    <Tab.Navigator screenOptions={{ headerShown: false }}>
+      <Tab.Screen name="Home" component={HomeStack} options={{ title: 'Transactions' }} />
+      <Tab.Screen name="Add" component={AddTransactionScreen} options={{ title: 'Add' }} />
+      <Tab.Screen name="Reports" component={ReportsScreen} options={{ title: 'Reports' }} />
+    </Tab.Navigator>
+  );
+}
