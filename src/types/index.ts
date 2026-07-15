@@ -16,6 +16,11 @@ export interface Transaction {
   date: string; // ISO string
 }
 
+export interface Budget {
+  categoryId: number;
+  monthlyLimit: number;
+}
+
 export const DEFAULT_CATEGORIES: Omit<Category, 'id'>[] = [
   { name: 'Salary', type: 'income', color: '#22c55e' },
   { name: 'Business', type: 'income', color: '#16a34a' },
