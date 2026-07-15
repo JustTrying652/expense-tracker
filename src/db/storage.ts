@@ -1,8 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Transaction, Category, DEFAULT_CATEGORIES } from '../types';
+import { Transaction, Category, Budget, DEFAULT_CATEGORIES } from '../types';
 
 const CATEGORIES_KEY = 'categories';
 const TRANSACTIONS_KEY = 'transactions';
+const BUDGETS_KEY = 'budgets';
 
 async function readJson<T>(key: string, fallback: T): Promise<T> {
   const raw = await AsyncStorage.getItem(key);
@@ -46,4 +47,24 @@ export async function getTransactionsByMonth(year: number, month: number): Promi
 export async function deleteTransaction(id: number): Promise<void> {
   const all = await readJson<Transaction[]>(TRANSACTIONS_KEY, []);
   await writeJson(TRANSACTIONS_KEY, all.filter((t) => t.id !== id));
+}
+
+export async function getBudgets(): Promise<Budget[]> {
+  return readJson<Budget[]>(BUDGETS_KEY, []);
+}
+
+export async function setBudget(categoryId: number, monthlyLimit: number): Promise<void> {
+  const all = await readJson<Budget[]>(BUDGETS_KEY, []);
+  const existingIndex = all.findIndex((b) => b.categoryId === categoryId);
+  if (existingIndex >= 0) {
+    all[existingIndex].monthlyLimit = monthlyLimit;
+  } else {
+    all.push({ categoryId, monthlyLimit });
+  }
+  await writeJson(BUDGETS_KEY, all);
+}
+
+export async function deleteBudget(categoryId: number): Promise<void> {
+  const all = await readJson<Budget[]>(BUDGETS_KEY, []);
+  await writeJson(BUDGETS_KEY, all.filter((b) => b.categoryId !== categoryId));
 }

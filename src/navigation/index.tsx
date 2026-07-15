@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from '../screens/HomeScreen';
 import AddTransactionScreen from '../screens/AddTransactionScreen';
 import ReportsScreen from '../screens/ReportsScreen';
+import BudgetsScreen from '../screens/BudgetsScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -20,7 +21,9 @@ export default function RootNavigator() {
     <Tab.Navigator screenOptions={{ headerShown: false }}>
       <Tab.Screen name="Home" component={HomeStack} options={{ title: 'Transactions' }} />
       <Tab.Screen name="Add" component={AddTransactionScreen} options={{ title: 'Add' }} />
+      <Tab.Screen name="Budgets" component={BudgetsScreen} options={{ title: 'Budgets' }} />
       <Tab.Screen name="Reports" component={ReportsScreen} options={{ title: 'Reports' }} />
+      
     </Tab.Navigator>
   );
 }

@@ -2,10 +2,11 @@ import { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { PieChart } from 'react-native-chart-kit';
-import { getTransactionsByMonth, getCategories } from '../db/storage';
-import { Transaction, Category } from '../types';
+import { getTransactionsByMonth, getCategories, getBudgets } from '../db/storage';
+import { Transaction, Category, Budget } from '../types';
 import * as Print from 'expo-print';
 import { buildReportHtml } from '../utils/pdfTemplate';
+import BudgetProgressBar from '../components/BudgetProgressBar';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -15,6 +16,7 @@ export default function ReportsScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
   const now = new Date();
   const isCurrentMonth = viewDate.getFullYear() === now.getFullYear() && viewDate.getMonth() === now.getMonth();
+  const [budgets, setBudgets] = useState<Budget[]>([]);
 
 
   useFocusEffect(
@@ -22,6 +24,7 @@ export default function ReportsScreen() {
       (async () => {
         setTransactions(await getTransactionsByMonth(viewDate.getFullYear(), viewDate.getMonth() + 1));
         setCategories(await getCategories());
+        setBudgets(await getBudgets());
       })();
     }, [viewDate])
   );
@@ -107,7 +110,27 @@ export default function ReportsScreen() {
       ) : (
         <Text style={styles.empty}>No expenses recorded this month yet.</Text>
       )}
+      {budgets.length > 0 && (
+        <>
+          <Text style={styles.sectionTitle}>Budget Progress</Text>
+          {budgets.map((b) => {
+            const cat = categoryMap[b.categoryId];
+            if (!cat) return null;
+            const spent = expenseByCategory[b.categoryId] ?? 0;
+            return (
+              <BudgetProgressBar
+                key={b.categoryId}
+                categoryName={cat.name}
+                color={cat.color}
+                spent={spent}
+                limit={b.monthlyLimit}
+              />
+            );
+          })}
+        </>
+      )}
     </ScrollView>
+    
   );
 }
 
