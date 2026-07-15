@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Platform } from 'react-native';
 import { Transaction, Category } from '../types';
 
 interface Props {
@@ -11,6 +11,11 @@ export default function TransactionItem({ transaction, category, onDelete }: Pro
   const isIncome = transaction.type === 'income';
 
   function confirmDelete() {
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('Delete this transaction? This cannot be undone.');
+      if (confirmed) onDelete(transaction.id);
+      return;
+    }
     Alert.alert('Delete transaction?', 'This cannot be undone.', [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Delete', style: 'destructive', onPress: () => onDelete(transaction.id) },
