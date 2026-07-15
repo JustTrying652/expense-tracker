@@ -10,11 +10,12 @@ import { buildReportHtml } from '../utils/pdfTemplate';
 const screenWidth = Dimensions.get('window').width;
 
 export default function ReportsScreen() {
-  const now = new Date();
-  const isCurrentMonth = viewDate.getFullYear() === now.getFullYear() && viewDate.getMonth() === now.getMonth();
   const [viewDate, setViewDate] = useState(new Date());
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const now = new Date();
+  const isCurrentMonth = viewDate.getFullYear() === now.getFullYear() && viewDate.getMonth() === now.getMonth();
+
 
   useFocusEffect(
     useCallback(() => {
