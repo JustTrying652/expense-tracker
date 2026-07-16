@@ -1,46 +1,59 @@
+import { useCallback, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
-import { getCategories, addTransaction, getBudgets, getTransactionsByMonth } from '../db/storage';
-import { Category, TransactionType, Budget } from '../types';
-import { showAlert } from '../utils/alert'; 
-import { useState, useCallback } from 'react';
+import { useFocusEffect, useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { getCategories, addTransaction, updateTransaction, getBudgets, getTransactionsByMonth } from '../db/storage';
+import { Category, TransactionType } from '../types';
+import { showAlert } from '../utils/alert';
+import { HomeStackParamList } from '../navigation';
+
+type EditRouteProp = RouteProp<HomeStackParamList, 'EditTransaction'>;
 
 export default function AddTransactionScreen() {
-  const [type, setType] = useState<TransactionType>('expense');
+  const route = useRoute<EditRouteProp>();
+  const navigation = useNavigation();
+  const editingTransaction = route.params?.transaction ?? null;
+  const isEditMode = !!editingTransaction;
+
+  const [type, setType] = useState<TransactionType>(editingTransaction?.type ?? 'expense');
   const [categories, setCategories] = useState<Category[]>([]);
-  const [categoryId, setCategoryId] = useState<number | null>(null);
-  const [amount, setAmount] = useState('');
-  const [note, setNote] = useState('');
+  const [categoryId, setCategoryId] = useState<number | null>(editingTransaction?.categoryId ?? null);
+  const [amount, setAmount] = useState(editingTransaction ? String(editingTransaction.amount) : '');
+  const [note, setNote] = useState(editingTransaction?.note ?? '');
 
   useFocusEffect(
     useCallback(() => {
       (async () => {
         const cats = await getCategories();
         setCategories(cats);
-        const firstMatch = cats.find((c) => c.type === type);
-        setCategoryId(firstMatch ? firstMatch.id : null);
+        // Only auto-pick the first category in ADD mode — in edit mode we
+        // already have the transaction's existing category and shouldn't
+        // override the user's original choice just because the type filter changed.
+        if (!isEditMode) {
+          const firstMatch = cats.find((c) => c.type === type);
+          setCategoryId(firstMatch ? firstMatch.id : null);
+        }
       })();
     }, [type])
   );
 
   const filteredCategories = categories.filter((c) => c.type === type);
 
-  async function checkBudgetStatus(categoryId: number): Promise<{ status: 'ok' | 'warning' | 'over'; spent: number; limit: number } | null> {
-  const budgets = await getBudgets();
-  const budget = budgets.find((b) => b.categoryId === categoryId);
-  if (!budget) return null;
+  async function checkBudgetStatus(categoryId: number) {
+    const budgets = await getBudgets();
+    const budget = budgets.find((b) => b.categoryId === categoryId);
+    if (!budget) return null;
 
-  const now = new Date();
-  const monthTx = await getTransactionsByMonth(now.getFullYear(), now.getMonth() + 1);
-  const spent = monthTx
-    .filter((t) => t.type === 'expense' && t.categoryId === categoryId)
-    .reduce((s, t) => s + t.amount, 0);
+    const now = new Date();
+    const monthTx = await getTransactionsByMonth(now.getFullYear(), now.getMonth() + 1);
+    const spent = monthTx
+      .filter((t) => t.type === 'expense' && t.categoryId === categoryId)
+      .reduce((s, t) => s + t.amount, 0);
 
-  const pct = spent / budget.monthlyLimit;
-  if (pct >= 1) return { status: 'over', spent, limit: budget.monthlyLimit };
-  if (pct >= 0.8) return { status: 'warning', spent, limit: budget.monthlyLimit };
-  return { status: 'ok', spent, limit: budget.monthlyLimit };
-}
+    const pct = spent / budget.monthlyLimit;
+    if (pct >= 1) return { status: 'over' as const, spent, limit: budget.monthlyLimit };
+    if (pct >= 0.8) return { status: 'warning' as const, spent, limit: budget.monthlyLimit };
+    return { status: 'ok' as const, spent, limit: budget.monthlyLimit };
+  }
 
   async function handleSave() {
     const parsed = parseFloat(amount);
@@ -53,14 +66,22 @@ export default function AddTransactionScreen() {
       return;
     }
 
-    await addTransaction({
+    const payload = {
       type,
       amount: parsed,
       categoryId,
       note: note.trim(),
-      date: new Date().toISOString(),
-    });
+      date: editingTransaction?.date ?? new Date().toISOString(),
+    };
 
+    if (isEditMode) {
+      await updateTransaction(editingTransaction.id, payload);
+      showAlert('Updated', 'Transaction updated.');
+      navigation.goBack();
+      return;
+    }
+
+    await addTransaction(payload);
     setAmount('');
     setNote('');
 
@@ -141,7 +162,7 @@ export default function AddTransactionScreen() {
       />
 
       <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-        <Text style={styles.saveBtnText}>Save Transaction</Text>
+        <Text style={styles.saveBtnText}>{isEditMode ? 'Update Transaction' : 'Save Transaction'}</Text>
       </TouchableOpacity>
     </ScrollView>
   );
