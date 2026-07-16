@@ -1,16 +1,19 @@
 import { useCallback, useState } from 'react';
 import { View, FlatList, Text, StyleSheet } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { getTransactions, getCategories, deleteTransaction } from '../db/storage';
 import { Transaction, Category } from '../types';
 import TransactionItem from '../components/TransactionItem';
+import { HomeStackParamList } from '../navigation';
+
+type NavProp = NativeStackNavigationProp<HomeStackParamList, 'HomeList'>;
 
 export default function HomeScreen() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const navigation = useNavigation<NavProp>();
 
-  // useFocusEffect refetches every time the tab is focused, so new
-  // transactions show up immediately after adding one on another tab.
   useFocusEffect(
     useCallback(() => {
       (async () => {
@@ -20,16 +23,22 @@ export default function HomeScreen() {
     }, [])
   );
 
+  async function handleDelete(id: number) {
+    await deleteTransaction(id);
+    setTransactions(await getTransactions());
+  }
+
+  function handlePress(transaction: Transaction) {
+    navigation.navigate('EditTransaction', { transaction });
+  }
+
   const balance = transactions.reduce(
     (sum, t) => sum + (t.type === 'income' ? t.amount : -t.amount),
     0
   );
 
   const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c]));
-  async function handleDelete(id: number) {
-    await deleteTransaction(id);
-    setTransactions(await getTransactions());
-  }
+
   return (
     <View style={styles.container}>
       <View style={styles.balanceCard}>
@@ -40,7 +49,12 @@ export default function HomeScreen() {
         data={transactions}
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => (
-          <TransactionItem transaction={item} category={categoryMap[item.categoryId]} onDelete={handleDelete} />
+          <TransactionItem
+            transaction={item}
+            category={categoryMap[item.categoryId]}
+            onDelete={handleDelete}
+            onPress={handlePress}
+          />
         )}
         ListEmptyComponent={
           <Text style={styles.empty}>No transactions yet. Add your first one below.</Text>
