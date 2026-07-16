@@ -2,11 +2,12 @@ import { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { PieChart } from 'react-native-chart-kit';
-import { getTransactionsByMonth, getCategories, getBudgets } from '../db/storage';
+import { getTransactionsByMonth, getCategories, getBudgets, getMonthlyTotals, MonthlyTotal } from '../db/storage';
 import { Transaction, Category, Budget } from '../types';
 import * as Print from 'expo-print';
 import { buildReportHtml } from '../utils/pdfTemplate';
 import BudgetProgressBar from '../components/BudgetProgressBar';
+import TrendChart from '../components/TrendChart';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -17,6 +18,7 @@ export default function ReportsScreen() {
   const now = new Date();
   const isCurrentMonth = viewDate.getFullYear() === now.getFullYear() && viewDate.getMonth() === now.getMonth();
   const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [monthlyTotals, setMonthlyTotals] = useState<MonthlyTotal[]>([]);
 
 
   useFocusEffect(
@@ -25,6 +27,7 @@ export default function ReportsScreen() {
         setTransactions(await getTransactionsByMonth(viewDate.getFullYear(), viewDate.getMonth() + 1));
         setCategories(await getCategories());
         setBudgets(await getBudgets());
+        setMonthlyTotals(await getMonthlyTotals(6));
       })();
     }, [viewDate])
   );
@@ -129,6 +132,8 @@ export default function ReportsScreen() {
           })}
         </>
       )}
+      <Text style={styles.sectionTitle}>6-Month Trend</Text>
+      <TrendChart data={monthlyTotals} />
     </ScrollView>
     
   );
