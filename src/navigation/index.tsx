@@ -4,14 +4,21 @@ import HomeScreen from '../screens/HomeScreen';
 import AddTransactionScreen from '../screens/AddTransactionScreen';
 import ReportsScreen from '../screens/ReportsScreen';
 import BudgetsScreen from '../screens/BudgetsScreen';
+import { Transaction } from '../types';
+
+export type HomeStackParamList = {
+  HomeList: undefined;
+  EditTransaction: { transaction: Transaction };
+};
 
 const Tab = createBottomTabNavigator();
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<HomeStackParamList>();
 
 function HomeStack() {
   return (
     <Stack.Navigator>
       <Stack.Screen name="HomeList" component={HomeScreen} options={{ title: 'Transactions' }} />
+      <Stack.Screen name="EditTransaction" component={AddTransactionScreen} options={{ title: 'Edit Transaction' }} />
     </Stack.Navigator>
   );
 }
@@ -23,7 +30,6 @@ export default function RootNavigator() {
       <Tab.Screen name="Add" component={AddTransactionScreen} options={{ title: 'Add' }} />
       <Tab.Screen name="Budgets" component={BudgetsScreen} options={{ title: 'Budgets' }} />
       <Tab.Screen name="Reports" component={ReportsScreen} options={{ title: 'Reports' }} />
-      
     </Tab.Navigator>
   );
 }
