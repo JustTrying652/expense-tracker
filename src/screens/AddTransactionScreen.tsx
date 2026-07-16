@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { getCategories, addTransaction } from '../db/storage';
-import { Category, TransactionType } from '../types';
+import { getCategories, addTransaction, getBudgets, getTransactionsByMonth } from '../db/storage';
+import { Category, TransactionType, Budget } from '../types';
 
 export default function AddTransactionScreen() {
   const [type, setType] = useState<TransactionType>('expense');
@@ -24,6 +24,23 @@ export default function AddTransactionScreen() {
 
   const filteredCategories = categories.filter((c) => c.type === type);
 
+  async function checkBudgetStatus(categoryId: number): Promise<{ status: 'ok' | 'warning' | 'over'; spent: number; limit: number } | null> {
+  const budgets = await getBudgets();
+  const budget = budgets.find((b) => b.categoryId === categoryId);
+  if (!budget) return null;
+
+  const now = new Date();
+  const monthTx = await getTransactionsByMonth(now.getFullYear(), now.getMonth() + 1);
+  const spent = monthTx
+    .filter((t) => t.type === 'expense' && t.categoryId === categoryId)
+    .reduce((s, t) => s + t.amount, 0);
+
+  const pct = spent / budget.monthlyLimit;
+  if (pct >= 1) return { status: 'over', spent, limit: budget.monthlyLimit };
+  if (pct >= 0.8) return { status: 'warning', spent, limit: budget.monthlyLimit };
+  return { status: 'ok', spent, limit: budget.monthlyLimit };
+}
+
   async function handleSave() {
     const parsed = parseFloat(amount);
     if (!parsed || parsed <= 0) {
@@ -34,6 +51,7 @@ export default function AddTransactionScreen() {
       Alert.alert('Pick a category', 'Choose a category before saving.');
       return;
     }
+
     await addTransaction({
       type,
       amount: parsed,
@@ -41,8 +59,30 @@ export default function AddTransactionScreen() {
       note: note.trim(),
       date: new Date().toISOString(),
     });
+
     setAmount('');
     setNote('');
+
+    if (type === 'expense') {
+      const result = await checkBudgetStatus(categoryId);
+      const categoryName = categories.find((c) => c.id === categoryId)?.name ?? 'this category';
+
+      if (result?.status === 'over') {
+        Alert.alert(
+          'Over budget',
+          `You've spent KES ${result.spent.toLocaleString()} on ${categoryName} this month — KES ${(result.spent - result.limit).toLocaleString()} over your KES ${result.limit.toLocaleString()} limit.`
+        );
+        return;
+      }
+      if (result?.status === 'warning') {
+        Alert.alert(
+          'Approaching budget',
+          `You've used KES ${result.spent.toLocaleString()} of your KES ${result.limit.toLocaleString()} ${categoryName} budget (${Math.round((result.spent / result.limit) * 100)}%).`
+        );
+        return;
+      }
+    }
+
     Alert.alert('Saved', 'Transaction added.');
   }
 
