@@ -1,8 +1,9 @@
-import { useCallback, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { getCategories, addTransaction, getBudgets, getTransactionsByMonth } from '../db/storage';
 import { Category, TransactionType, Budget } from '../types';
+import { showAlert } from '../utils/alert'; 
+import { useState, useCallback } from 'react';
 
 export default function AddTransactionScreen() {
   const [type, setType] = useState<TransactionType>('expense');
@@ -44,11 +45,11 @@ export default function AddTransactionScreen() {
   async function handleSave() {
     const parsed = parseFloat(amount);
     if (!parsed || parsed <= 0) {
-      Alert.alert('Invalid amount', 'Enter an amount greater than 0.');
+      showAlert('Invalid amount', 'Enter an amount greater than 0.');
       return;
     }
     if (!categoryId) {
-      Alert.alert('Pick a category', 'Choose a category before saving.');
+      showAlert('Pick a category', 'Choose a category before saving.');
       return;
     }
 
@@ -68,14 +69,14 @@ export default function AddTransactionScreen() {
       const categoryName = categories.find((c) => c.id === categoryId)?.name ?? 'this category';
 
       if (result?.status === 'over') {
-        Alert.alert(
+        showAlert(
           'Over budget',
           `You've spent KES ${result.spent.toLocaleString()} on ${categoryName} this month — KES ${(result.spent - result.limit).toLocaleString()} over your KES ${result.limit.toLocaleString()} limit.`
         );
         return;
       }
       if (result?.status === 'warning') {
-        Alert.alert(
+        showAlert(
           'Approaching budget',
           `You've used KES ${result.spent.toLocaleString()} of your KES ${result.limit.toLocaleString()} ${categoryName} budget (${Math.round((result.spent / result.limit) * 100)}%).`
         );
@@ -83,7 +84,7 @@ export default function AddTransactionScreen() {
       }
     }
 
-    Alert.alert('Saved', 'Transaction added.');
+    showAlert('Saved', 'Transaction added.');
   }
 
   return (
