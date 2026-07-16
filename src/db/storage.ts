@@ -68,3 +68,33 @@ export async function deleteBudget(categoryId: number): Promise<void> {
   const all = await readJson<Budget[]>(BUDGETS_KEY, []);
   await writeJson(BUDGETS_KEY, all.filter((b) => b.categoryId !== categoryId));
 }
+
+export interface MonthlyTotal {
+  year: number;
+  month: number; // 1-12
+  income: number;
+  expense: number;
+}
+
+export async function getMonthlyTotals(monthsBack: number): Promise<MonthlyTotal[]> {
+  const all = await getTransactions();
+  const now = new Date();
+  const results: MonthlyTotal[] = [];
+
+  for (let i = monthsBack - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const year = d.getFullYear();
+    const month = d.getMonth() + 1;
+    const monthStr = String(month).padStart(2, '0');
+    const monthTx = all.filter((t) => t.date.startsWith(`${year}-${monthStr}`));
+
+    results.push({
+      year,
+      month,
+      income: monthTx.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0),
+      expense: monthTx.filter((t) => t.type === 'expense').reduce((s, t) => s + t.amount, 0),
+    });
+  }
+
+  return results;
+}
