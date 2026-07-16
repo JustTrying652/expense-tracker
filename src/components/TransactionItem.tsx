@@ -5,9 +5,10 @@ interface Props {
   transaction: Transaction;
   category?: Category;
   onDelete: (id: number) => void;
+  onPress: (transaction: Transaction) => void;
 }
 
-export default function TransactionItem({ transaction, category, onDelete }: Props) {
+export default function TransactionItem({ transaction, category, onDelete, onPress }: Props) {
   const isIncome = transaction.type === 'income';
 
   function confirmDelete() {
@@ -23,7 +24,7 @@ export default function TransactionItem({ transaction, category, onDelete }: Pro
   }
 
   return (
-    <View style={styles.row}>
+    <TouchableOpacity style={styles.row} onPress={() => onPress(transaction)} activeOpacity={0.6}>
       <View style={[styles.dot, { backgroundColor: category?.color ?? '#999' }]} />
       <View style={styles.info}>
         <Text style={styles.category}>{category?.name ?? 'Uncategorized'}</Text>
@@ -36,7 +37,7 @@ export default function TransactionItem({ transaction, category, onDelete }: Pro
       <TouchableOpacity onPress={confirmDelete} style={styles.deleteBtn}>
         <Text style={styles.deleteBtnText}>✕</Text>
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 }
 
