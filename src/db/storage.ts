@@ -98,3 +98,12 @@ export async function getMonthlyTotals(monthsBack: number): Promise<MonthlyTotal
 
   return results;
 }
+
+export async function updateTransaction(id: number, updates: Omit<Transaction, 'id'>): Promise<void> {
+  const all = await readJson<Transaction[]>(TRANSACTIONS_KEY, []);
+  const index = all.findIndex((t) => t.id === id);
+  if (index >= 0) {
+    all[index] = { ...updates, id };
+    await writeJson(TRANSACTIONS_KEY, all);
+  }
+}
