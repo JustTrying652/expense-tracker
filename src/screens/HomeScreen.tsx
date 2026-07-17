@@ -7,6 +7,7 @@ import { Transaction, Category } from '../types';
 import TransactionItem from '../components/TransactionItem';
 import { HomeStackParamList } from '../navigation';
 import LoadingSpinner from '../components/LoadingSpinner';
+import EmptyState from '../components/EmptyState';
 
 type NavProp = NativeStackNavigationProp<HomeStackParamList, 'HomeList'>;
 
@@ -64,7 +65,11 @@ export default function HomeScreen() {
           />
         )}
         ListEmptyComponent={
-          <Text style={styles.empty}>No transactions yet. Add your first one below.</Text>
+          <EmptyState
+            emoji="💸"
+            title="No transactions yet"
+            subtitle="Tap Add below to record your first income or expense."
+          />
         }
       />
     </View>
