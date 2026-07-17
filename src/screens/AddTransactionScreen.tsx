@@ -5,6 +5,7 @@ import { getCategories, addTransaction, updateTransaction, getBudgets, getTransa
 import { Category, TransactionType } from '../types';
 import { showAlert } from '../utils/alert';
 import { HomeStackParamList } from '../navigation';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 type EditRouteProp = RouteProp<HomeStackParamList, 'EditTransaction'>;
 
@@ -108,6 +109,9 @@ export default function AddTransactionScreen() {
     }
 
     showAlert('Saved', 'Transaction added.');
+  }
+  if (loading) {
+    return <LoadingSpinner />;
   }
 
   return (
