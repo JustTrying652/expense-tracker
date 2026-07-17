@@ -3,6 +3,7 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, FlatList, Alert } 
 import { useFocusEffect } from '@react-navigation/native';
 import { getCategories, getBudgets, setBudget, deleteBudget } from '../db/storage';
 import { Category, Budget } from '../types';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function BudgetsScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -47,6 +48,10 @@ export default function BudgetsScreen() {
   }
 
   const budgetMap = Object.fromEntries(budgets.map((b) => [b.categoryId, b.monthlyLimit]));
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <View style={styles.container}>
