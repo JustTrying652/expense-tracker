@@ -19,6 +19,7 @@ export default function ReportsScreen() {
   const isCurrentMonth = viewDate.getFullYear() === now.getFullYear() && viewDate.getMonth() === now.getMonth();
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [monthlyTotals, setMonthlyTotals] = useState<MonthlyTotal[]>([]);
+  const [loading, setLoading] = useState(true);
 
 
   useFocusEffect(
@@ -28,6 +29,7 @@ export default function ReportsScreen() {
         setCategories(await getCategories());
         setBudgets(await getBudgets());
         setMonthlyTotals(await getMonthlyTotals(6));
+        setLoading(false);
       })();
     }, [viewDate])
   );
