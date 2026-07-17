@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { BarChart } from 'react-native-chart-kit';
 import { MonthlyTotal } from '../db/storage';
+import EmptyState from './EmptyState';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -17,7 +18,7 @@ export default function TrendChart({ data }: Props) {
   const hasAnyData = data.some((d) => d.income > 0 || d.expense > 0);
 
   if (!hasAnyData) {
-    return <Text style={styles.empty}>Not enough history yet to show a trend.</Text>;
+    return <EmptyState emoji="📈" title="Not enough history yet" subtitle="Your monthly trend will build up as you use the app." />;
   }
 
   return (
