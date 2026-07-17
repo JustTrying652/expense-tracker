@@ -19,6 +19,7 @@ export default function AddTransactionScreen() {
   const [categoryId, setCategoryId] = useState<number | null>(editingTransaction?.categoryId ?? null);
   const [amount, setAmount] = useState(editingTransaction ? String(editingTransaction.amount) : '');
   const [note, setNote] = useState(editingTransaction?.note ?? '');
+  const [loading, setLoading] = useState(true);
 
   useFocusEffect(
     useCallback(() => {
@@ -32,6 +33,7 @@ export default function AddTransactionScreen() {
           const firstMatch = cats.find((c) => c.type === type);
           setCategoryId(firstMatch ? firstMatch.id : null);
         }
+        setLoading(false);
       })();
     }, [type])
   );
