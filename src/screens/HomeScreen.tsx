@@ -13,12 +13,14 @@ export default function HomeScreen() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const navigation = useNavigation<NavProp>();
+  const [loading, setLoading] = useState(true);
 
   useFocusEffect(
     useCallback(() => {
       (async () => {
         setTransactions(await getTransactions());
         setCategories(await getCategories());
+        setLoading(false);
       })();
     }, [])
   );
