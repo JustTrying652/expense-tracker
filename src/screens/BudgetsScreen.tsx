@@ -8,6 +8,7 @@ export default function BudgetsScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [inputs, setInputs] = useState<Record<number, string>>({});
+  const [loading, setLoading] = useState(true);
 
   useFocusEffect(
     useCallback(() => {
@@ -19,6 +20,7 @@ export default function BudgetsScreen() {
         const initialInputs: Record<number, string> = {};
         bud.forEach((b) => { initialInputs[b.categoryId] = String(b.monthlyLimit); });
         setInputs(initialInputs);
+        setLoading(false);
       })();
     }, [])
   );
