@@ -8,6 +8,7 @@ import * as Print from 'expo-print';
 import { buildReportHtml } from '../utils/pdfTemplate';
 import BudgetProgressBar from '../components/BudgetProgressBar';
 import TrendChart from '../components/TrendChart';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -69,6 +70,9 @@ export default function ReportsScreen() {
     } catch (err) {
       Alert.alert('Export failed', 'Could not generate PDF. Try again.');
     }
+  }
+  if (loading) {
+    return <LoadingSpinner />;
   }
 
   return (
