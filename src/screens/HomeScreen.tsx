@@ -6,6 +6,7 @@ import { getTransactions, getCategories, deleteTransaction } from '../db/storage
 import { Transaction, Category } from '../types';
 import TransactionItem from '../components/TransactionItem';
 import { HomeStackParamList } from '../navigation';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 type NavProp = NativeStackNavigationProp<HomeStackParamList, 'HomeList'>;
 
@@ -40,6 +41,10 @@ export default function HomeScreen() {
   );
 
   const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c]));
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <View style={styles.container}>
