@@ -9,6 +9,7 @@ import { buildReportHtml } from '../utils/pdfTemplate';
 import BudgetProgressBar from '../components/BudgetProgressBar';
 import TrendChart from '../components/TrendChart';
 import LoadingSpinner from '../components/LoadingSpinner';
+import EmptyState from '../components/EmptyState';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -117,7 +118,7 @@ export default function ReportsScreen() {
           paddingLeft="0"
         />
       ) : (
-        <Text style={styles.empty}>No expenses recorded this month yet.</Text>
+        <EmptyState emoji="📊" title="No expenses this month" subtitle="Your category breakdown will appear here once you add some." />
       )}
       {budgets.length > 0 && (
         <>
