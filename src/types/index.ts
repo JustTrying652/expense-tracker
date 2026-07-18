@@ -21,6 +21,16 @@ export interface Budget {
   monthlyLimit: number;
 }
 
+export interface RecurringRule {
+  id: number;
+  type: TransactionType;
+  amount: number;
+  categoryId: number;
+  note?: string;
+  dayOfMonth: number; // 1-31, clamped to shorter months when generating
+  lastGeneratedMonth: string; // 'YYYY-MM' — the most recent month this rule has produced a transaction for
+}
+
 export const DEFAULT_CATEGORIES: Omit<Category, 'id'>[] = [
   { name: 'Salary', type: 'income', color: '#22c55e' },
   { name: 'Business', type: 'income', color: '#16a34a' },
