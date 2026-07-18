@@ -1,10 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Transaction, Category, Budget, DEFAULT_CATEGORIES } from '../types';
+import { Transaction, Category, Budget, RecurringRule, DEFAULT_CATEGORIES } from '../types';
 
 const CATEGORIES_KEY = 'categories';
 const TRANSACTIONS_KEY = 'transactions';
 const BUDGETS_KEY = 'budgets';
 const ONBOARDING_KEY = 'hasOnboarded';
+const RECURRING_KEY = 'recurring';
 
 async function readJson<T>(key: string, fallback: T): Promise<T> {
   const raw = await AsyncStorage.getItem(key);
@@ -121,4 +122,82 @@ export async function getHasOnboarded(): Promise<boolean> {
 
 export async function setHasOnboarded(): Promise<void> {
   await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+}
+
+function monthKey(year: number, month: number): string {
+  return `${year}-${String(month).padStart(2, '0')}`;
+}
+
+function daysInMonth(year: number, month: number): number {
+  return new Date(year, month, 0).getDate(); // last day of the given 1-12 month
+}
+
+export async function getRecurringRules(): Promise<RecurringRule[]> {
+  return readJson<RecurringRule[]>(RECURRING_KEY, []);
+}
+
+export async function addRecurringRule(rule: Omit<RecurringRule, 'id'>): Promise<void> {
+  const all = await readJson<RecurringRule[]>(RECURRING_KEY, []);
+  const nextId = all.length > 0 ? Math.max(...all.map((r) => r.id)) + 1 : 1;
+  all.push({ ...rule, id: nextId });
+  await writeJson(RECURRING_KEY, all);
+}
+export async function deleteRecurringRule(id: number): Promise<void> {
+  const all = await readJson<RecurringRule[]>(RECURRING_KEY, []);
+  await writeJson(RECURRING_KEY, all.filter((r) => r.id !== id));
+}
+
+/**
+ * Generates any transactions that are "due" for each recurring rule,
+ * catching up on missed months (capped at 24 to avoid runaway generation).
+ * Returns how many transactions were created, so the caller can notify the user.
+ */
+export async function generateDueRecurringTransactions(): Promise<number> {
+  const rules = await getRecurringRules();
+  if (rules.length === 0) return 0;
+
+  const now = new Date();
+  const currentKey = monthKey(now.getFullYear(), now.getMonth() + 1);
+  let generatedCount = 0;
+  const updatedRules: RecurringRule[] = [];
+
+  for (const rule of rules) {
+    const [lastYearStr, lastMonthStr] = rule.lastGeneratedMonth.split('-');
+    let cursorYear = parseInt(lastYearStr, 10);
+    let cursorMonth = parseInt(lastMonthStr, 10);
+    let newLastGenerated = rule.lastGeneratedMonth;
+    let safetyCounter = 0;
+
+    while (safetyCounter < 24) {
+      cursorMonth += 1;
+      if (cursorMonth > 12) {
+        cursorMonth = 1;
+        cursorYear += 1;
+      }
+      const key = monthKey(cursorYear, cursorMonth);
+      if (key > currentKey) break; // never generate into the future
+
+      const day = Math.min(rule.dayOfMonth, daysInMonth(cursorYear, cursorMonth));
+      const date = new Date(cursorYear, cursorMonth - 1, day).toISOString();
+
+      await addTransaction({
+        type: rule.type,
+        amount: rule.amount,
+        categoryId: rule.categoryId,
+        note: rule.note,
+        date,
+      });
+
+      generatedCount += 1;
+      newLastGenerated = key;
+      safetyCounter += 1;
+
+      if (key === currentKey) break;
+    }
+
+    updatedRules.push({ ...rule, lastGeneratedMonth: newLastGenerated });
+  }
+
+  await writeJson(RECURRING_KEY, updatedRules);
+  return generatedCount;
 }
