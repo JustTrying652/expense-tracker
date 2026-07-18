@@ -4,6 +4,7 @@ import { Transaction, Category, Budget, DEFAULT_CATEGORIES } from '../types';
 const CATEGORIES_KEY = 'categories';
 const TRANSACTIONS_KEY = 'transactions';
 const BUDGETS_KEY = 'budgets';
+const ONBOARDING_KEY = 'hasOnboarded';
 
 async function readJson<T>(key: string, fallback: T): Promise<T> {
   const raw = await AsyncStorage.getItem(key);
@@ -106,4 +107,13 @@ export async function updateTransaction(id: number, updates: Omit<Transaction, '
     all[index] = { ...updates, id };
     await writeJson(TRANSACTIONS_KEY, all);
   }
+}
+
+export async function getHasOnboarded(): Promise<boolean> {
+  const raw = await AsyncStorage.getItem(ONBOARDING_KEY);
+  return raw === 'true';
+}
+
+export async function setHasOnboarded(): Promise<void> {
+  await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
 }
