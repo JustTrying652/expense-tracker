@@ -65,7 +65,9 @@ export default function OnboardingScreen({ onDone }: Props) {
       finish();
       return;
     }
-    scrollRef.current?.scrollTo({ x: width * (index + 1), animated: true });
+    const nextIndex = index + 1;
+    setIndex(nextIndex);
+    scrollRef.current?.scrollTo({ x: width * nextIndex, animated: true });
   }
 
   const isLast = index === SLIDES.length - 1;
