@@ -1,11 +1,13 @@
 import { View, Text, StyleSheet, TouchableOpacity, Alert, Platform } from 'react-native';
 import { Transaction, Category } from '../types';
+import { colors, fonts } from '../theme';
+import CategoryStamp from './CategoryStamp';
 
 interface Props {
   transaction: Transaction;
   category?: Category;
   onDelete: (id: number) => void;
-  onPress: (transaction: Transaction) => void;
+  onPress: (id: number) => void;
 }
 
 export default function TransactionItem({ transaction, category, onDelete, onPress }: Props) {
@@ -24,31 +26,41 @@ export default function TransactionItem({ transaction, category, onDelete, onPre
   }
 
   return (
-    <TouchableOpacity style={styles.row} onPress={() => onPress(transaction)} activeOpacity={0.6}>
-      <View style={[styles.dot, { backgroundColor: category?.color ?? '#999' }]} />
-      <View style={styles.info}>
-        <Text style={styles.category}>{category?.name ?? 'Uncategorized'}</Text>
+    <TouchableOpacity style={styles.row} onPress={() => onPress(transaction.id)} activeOpacity={0.7}>
+      <View style={styles.left}>
+        <CategoryStamp name={category?.name ?? 'Other'} color={category?.color ?? colors.ash} />
         {!!transaction.note && <Text style={styles.note}>{transaction.note}</Text>}
-        <Text style={styles.date}>{new Date(transaction.date).toDateString()}</Text>
+        <Text style={styles.date}>{new Date(transaction.date).toDateString().toUpperCase()}</Text>
       </View>
-      <Text style={[styles.amount, { color: isIncome ? '#16a34a' : '#dc2626' }]}>
-        {isIncome ? '+' : '-'}KES {transaction.amount.toLocaleString()}
-      </Text>
-      <TouchableOpacity onPress={confirmDelete} style={styles.deleteBtn}>
-        <Text style={styles.deleteBtnText}>✕</Text>
-      </TouchableOpacity>
+      <View style={styles.right}>
+        <Text style={[styles.amount, { color: isIncome ? colors.stampGreen : colors.receiptRed }]}>
+          {isIncome ? '+' : '-'}{transaction.amount.toLocaleString()}
+        </Text>
+        <TouchableOpacity onPress={confirmDelete} style={styles.deleteBtn}>
+          <Text style={styles.deleteBtnText}>✕</Text>
+        </TouchableOpacity>
+      </View>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: '#eee' },
-  dot: { width: 10, height: 10, borderRadius: 5, marginRight: 12 },
-  info: { flex: 1 },
-  category: { fontSize: 15, fontWeight: '600', color: '#111' },
-  note: { fontSize: 13, color: '#666', marginTop: 2 },
-  date: { fontSize: 12, color: '#999', marginTop: 2 },
-  amount: { fontSize: 15, fontWeight: '700', marginRight: 10 },
-  deleteBtn: { padding: 6 },
-  deleteBtnText: { fontSize: 16, color: '#9ca3af', fontWeight: '600' },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1.5,
+    borderStyle: 'dashed',
+    borderBottomColor: '#D9D3C4',
+    backgroundColor: colors.paper,
+  },
+  left: { flex: 1, marginRight: 10 },
+  note: { fontFamily: fonts.mono, fontSize: 12, color: colors.ash, marginTop: 5 },
+  date: { fontFamily: fonts.mono, fontSize: 10, color: colors.ash, marginTop: 3, letterSpacing: 0.5 },
+  right: { alignItems: 'flex-end' },
+  amount: { fontFamily: fonts.monoBold, fontSize: 16 },
+  deleteBtn: { padding: 4, marginTop: 6 },
+  deleteBtnText: { fontSize: 13, color: colors.ash, fontWeight: '600' },
 });
