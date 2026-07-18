@@ -8,12 +8,14 @@ import {
   getTransactionById,
   getBudgets,
   getTransactionsByMonth,
+  addRecurringRule,
 } from '../db/storage';
 import { Category, TransactionType } from '../types';
 import { showAlert } from '../utils/alert';
 import { HomeStackParamList } from '../navigation';
 import { colors, fonts, spacing } from '../theme';
 import LoadingSpinner from '../components/LoadingSpinner';
+
 
 type EditRouteProp = RouteProp<HomeStackParamList, 'EditTransaction'>;
 
@@ -29,6 +31,7 @@ export default function AddTransactionScreen() {
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [loaded, setLoaded] = useState(!isEditMode);
+  const [repeatMonthly, setRepeatMonthly] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -99,8 +102,22 @@ export default function AddTransactionScreen() {
     }
 
     await addTransaction(payload);
+
+    if (repeatMonthly) {
+      const today = new Date();
+      await addRecurringRule({
+        type,
+        amount: parsed,
+        categoryId,
+        note: note.trim(),
+        dayOfMonth: today.getDate(),
+        lastGeneratedMonth: `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`,
+      });
+    }
+
     setAmount('');
     setNote('');
+    setRepeatMonthly(false);
 
     if (type === 'expense') {
       const result = await checkBudgetStatus(categoryId);
@@ -186,6 +203,19 @@ export default function AddTransactionScreen() {
           placeholder="e.g. Lunch with friends"
           placeholderTextColor={colors.ash}
         />
+        {!isEditMode && (
+          <TouchableOpacity style={styles.repeatRow} onPress={() => setRepeatMonthly((v) => !v)}>
+            <View style={[styles.checkbox, repeatMonthly && styles.checkboxActive]}>
+              {repeatMonthly && <Text style={styles.checkmark}>✓</Text>}
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.repeatLabel}>Repeat monthly</Text>
+              <Text style={styles.repeatHint}>
+                Auto-adds this on day {new Date().getDate()} of every month
+              </Text>
+            </View>
+          </TouchableOpacity>
+        )}
 
         <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
           <Text style={styles.saveBtnText}>{isEditMode ? 'UPDATE TRANSACTION' : 'SAVE TRANSACTION'}</Text>
@@ -238,4 +268,10 @@ const styles = StyleSheet.create({
   chipText: { fontFamily: fonts.displayMedium, fontSize: 13 },
   saveBtn: { backgroundColor: colors.ink, padding: 16, borderRadius: 8, alignItems: 'center', marginTop: spacing.lg },
   saveBtnText: { color: colors.white, fontFamily: fonts.display, fontSize: 14, letterSpacing: 1 },
+  repeatRow: { flexDirection: 'row', alignItems: 'center', marginTop: 20, padding: 12, backgroundColor: colors.white, borderRadius: 8, borderWidth: 1.5, borderColor: '#D9D3C4' },
+  checkbox: { width: 22, height: 22, borderRadius: 5, borderWidth: 1.5, borderColor: '#D9D3C4', marginRight: 12, alignItems: 'center', justifyContent: 'center' },
+  checkboxActive: { backgroundColor: colors.stampGreen, borderColor: colors.stampGreen },
+  checkmark: { color: colors.white, fontSize: 14, fontWeight: '700' },
+  repeatLabel: { fontFamily: fonts.displayMedium, fontSize: 13, color: colors.ink },
+  repeatHint: { fontFamily: fonts.mono, fontSize: 10, color: colors.ash, marginTop: 2 },
 });
