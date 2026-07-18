@@ -1,8 +1,10 @@
 import { useCallback, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { getCategories, getBudgets, setBudget, deleteBudget } from '../db/storage';
 import { Category, Budget } from '../types';
+import { showAlert } from '../utils/alert';
+import { colors, fonts, spacing } from '../theme';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function BudgetsScreen() {
@@ -29,12 +31,12 @@ export default function BudgetsScreen() {
   async function handleSave(categoryId: number) {
     const value = parseFloat(inputs[categoryId]);
     if (!value || value <= 0) {
-      Alert.alert('Invalid amount', 'Enter a limit greater than 0.');
+      showAlert('Invalid amount', 'Enter a limit greater than 0.');
       return;
     }
     await setBudget(categoryId, value);
     setBudgets(await getBudgets());
-    Alert.alert('Saved', 'Budget updated.');
+    showAlert('Saved', 'Budget updated.');
   }
 
   async function handleClear(categoryId: number) {
@@ -47,39 +49,47 @@ export default function BudgetsScreen() {
     });
   }
 
-  const budgetMap = Object.fromEntries(budgets.map((b) => [b.categoryId, b.monthlyLimit]));
+  if (loading) return <LoadingSpinner />;
 
-  if (loading) {
-    return <LoadingSpinner />;
-  }
+  const budgetMap = Object.fromEntries(budgets.map((b) => [b.categoryId, b.monthlyLimit]));
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Monthly Budgets</Text>
-      <Text style={styles.subheader}>Set a spending limit per category. Applies every month.</Text>
+      <View style={styles.header}>
+        <Text style={styles.headerLabel}>MONTHLY LIMITS</Text>
+        <Text style={styles.headerTitle}>Budgets</Text>
+      </View>
       <FlatList
         data={categories}
         keyExtractor={(c) => String(c.id)}
-        contentContainerStyle={{ padding: 16 }}
+        contentContainerStyle={{ padding: spacing.md }}
         renderItem={({ item }) => (
           <View style={styles.row}>
-            <View style={[styles.dot, { backgroundColor: item.color }]} />
-            <Text style={styles.categoryName}>{item.name}</Text>
-            <TextInput
-              style={styles.input}
-              keyboardType="numeric"
-              placeholder="No limit"
-              value={inputs[item.id] ?? ''}
-              onChangeText={(text) => setInputs((prev) => ({ ...prev, [item.id]: text }))}
-            />
-            <TouchableOpacity onPress={() => handleSave(item.id)} style={styles.saveBtn}>
-              <Text style={styles.saveBtnText}>Save</Text>
-            </TouchableOpacity>
-            {budgetMap[item.id] != null && (
-              <TouchableOpacity onPress={() => handleClear(item.id)} style={styles.clearBtn}>
-                <Text style={styles.clearBtnText}>✕</Text>
+            <View style={styles.rowTop}>
+              <View style={[styles.dot, { backgroundColor: item.color }]} />
+              <Text style={styles.categoryName}>{item.name}</Text>
+            </View>
+            <View style={styles.rowBottom}>
+              <View style={styles.inputWrap}>
+                <Text style={styles.currencyPrefix}>KES</Text>
+                <TextInput
+                  style={styles.input}
+                  keyboardType="numeric"
+                  placeholder="No limit"
+                  placeholderTextColor={colors.ash}
+                  value={inputs[item.id] ?? ''}
+                  onChangeText={(text) => setInputs((prev) => ({ ...prev, [item.id]: text }))}
+                />
+              </View>
+              <TouchableOpacity onPress={() => handleSave(item.id)} style={styles.saveBtn}>
+                <Text style={styles.saveBtnText}>SAVE</Text>
               </TouchableOpacity>
-            )}
+              {budgetMap[item.id] != null && (
+                <TouchableOpacity onPress={() => handleClear(item.id)} style={styles.clearBtn}>
+                  <Text style={styles.clearBtnText}>✕</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
         )}
       />
@@ -88,15 +98,28 @@ export default function BudgetsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  header: { fontSize: 20, fontWeight: '700', paddingHorizontal: 16, paddingTop: 16 },
-  subheader: { fontSize: 13, color: '#666', paddingHorizontal: 16, marginTop: 4, marginBottom: 8 },
-  row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#eee' },
-  dot: { width: 10, height: 10, borderRadius: 5, marginRight: 10 },
-  categoryName: { flex: 1, fontSize: 14, fontWeight: '600', color: '#111' },
-  input: { width: 90, borderWidth: 1, borderColor: '#ddd', borderRadius: 6, padding: 8, fontSize: 13, marginRight: 8 },
-  saveBtn: { backgroundColor: '#111827', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 6 },
-  saveBtnText: { color: '#fff', fontSize: 12, fontWeight: '600' },
+  container: { flex: 1, backgroundColor: colors.paper },
+  header: { backgroundColor: colors.ink, paddingVertical: 20, paddingHorizontal: spacing.md },
+  headerLabel: { fontFamily: fonts.mono, color: '#9CA3AF', fontSize: 11, letterSpacing: 2 },
+  headerTitle: { fontFamily: fonts.display, color: colors.white, fontSize: 22, marginTop: 4 },
+  row: {
+    backgroundColor: colors.white,
+    borderRadius: 10,
+    padding: 14,
+    marginBottom: 12,
+    borderWidth: 1.5,
+    borderColor: '#D9D3C4',
+    borderStyle: 'dashed',
+  },
+  rowTop: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  dot: { width: 10, height: 10, borderRadius: 5, marginRight: 8 },
+  categoryName: { fontFamily: fonts.displayMedium, fontSize: 14, color: colors.ink },
+  rowBottom: { flexDirection: 'row', alignItems: 'center' },
+  inputWrap: { flex: 1, flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1.5, borderBottomColor: '#D9D3C4', marginRight: 8 },
+  currencyPrefix: { fontFamily: fonts.mono, fontSize: 12, color: colors.ash, marginRight: 4 },
+  input: { flex: 1, fontFamily: fonts.mono, fontSize: 14, color: colors.ink, paddingVertical: 6 },
+  saveBtn: { backgroundColor: colors.ink, paddingVertical: 8, paddingHorizontal: 12, borderRadius: 6 },
+  saveBtnText: { color: colors.white, fontFamily: fonts.displayMedium, fontSize: 11, letterSpacing: 0.5 },
   clearBtn: { marginLeft: 6, padding: 4 },
-  clearBtnText: { color: '#9ca3af', fontSize: 14, fontWeight: '600' },
+  clearBtnText: { color: colors.ash, fontSize: 14, fontWeight: '600' },
 });

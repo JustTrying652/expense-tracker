@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
+import { colors, fonts } from '../theme';
 
 interface Props {
   categoryName: string;
@@ -15,29 +16,26 @@ export default function BudgetProgressBar({ categoryName, color, spent, limit }:
     <View style={styles.container}>
       <View style={styles.labelRow}>
         <Text style={styles.categoryName}>{categoryName}</Text>
-        <Text style={[styles.amountText, isOver && { color: '#dc2626' }]}>
+        <Text style={[styles.amountText, isOver && { color: colors.receiptRed }]}>
           KES {spent.toLocaleString()} / {limit.toLocaleString()}
         </Text>
       </View>
       <View style={styles.track}>
-        <View
-          style={[
-            styles.fill,
-            { width: `${pct}%`, backgroundColor: isOver ? '#dc2626' : color },
-          ]}
-        />
+        <View style={[styles.fill, { width: `${pct}%`, backgroundColor: isOver ? colors.receiptRed : color }]} />
       </View>
-      {isOver && <Text style={styles.overText}>Over budget by KES {(spent - limit).toLocaleString()}</Text>}
+      {isOver && (
+        <Text style={styles.overText}>OVER BY KES {(spent - limit).toLocaleString()}</Text>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { marginBottom: 14 },
-  labelRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
-  categoryName: { fontSize: 13, fontWeight: '600', color: '#111' },
-  amountText: { fontSize: 12, color: '#666' },
-  track: { height: 8, backgroundColor: '#f0f0f0', borderRadius: 4, overflow: 'hidden' },
+  container: { marginBottom: 16 },
+  labelRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 },
+  categoryName: { fontFamily: fonts.displayMedium, fontSize: 13, color: colors.ink },
+  amountText: { fontFamily: fonts.mono, fontSize: 11, color: colors.ash },
+  track: { height: 8, backgroundColor: '#EDE8DD', borderRadius: 4, overflow: 'hidden' },
   fill: { height: '100%', borderRadius: 4 },
-  overText: { fontSize: 11, color: '#dc2626', marginTop: 2 },
+  overText: { fontFamily: fonts.mono, fontSize: 10, color: colors.receiptRed, marginTop: 3, letterSpacing: 0.5 },
 });

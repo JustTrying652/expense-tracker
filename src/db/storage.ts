@@ -109,6 +109,11 @@ export async function updateTransaction(id: number, updates: Omit<Transaction, '
   }
 }
 
+export async function getTransactionById(id: number): Promise<Transaction | null> {
+  const all = await readJson<Transaction[]>(TRANSACTIONS_KEY, []);
+  return all.find((t) => t.id === id) ?? null;
+}
+
 export async function getHasOnboarded(): Promise<boolean> {
   const raw = await AsyncStorage.getItem(ONBOARDING_KEY);
   return raw === 'true';
