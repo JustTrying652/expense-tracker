@@ -4,11 +4,10 @@ import HomeScreen from '../screens/HomeScreen';
 import AddTransactionScreen from '../screens/AddTransactionScreen';
 import ReportsScreen from '../screens/ReportsScreen';
 import BudgetsScreen from '../screens/BudgetsScreen';
-import { Transaction } from '../types';
 
 export type HomeStackParamList = {
   HomeList: undefined;
-  EditTransaction: { transaction: Transaction };
+  EditTransaction: { transactionId: number };
 };
 
 const Tab = createBottomTabNavigator();

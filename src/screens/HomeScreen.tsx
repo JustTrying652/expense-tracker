@@ -1,20 +1,22 @@
 import { useCallback, useState } from 'react';
 import { View, FlatList, Text, StyleSheet } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { getTransactions, getCategories, deleteTransaction } from '../db/storage';
 import { Transaction, Category } from '../types';
 import TransactionItem from '../components/TransactionItem';
-import { HomeStackParamList } from '../navigation';
-import LoadingSpinner from '../components/LoadingSpinner';
 import EmptyState from '../components/EmptyState';
+import LoadingSpinner from '../components/LoadingSpinner';
+import ZigzagEdge from '../components/ZigzagEdge';
+import { colors, fonts } from '../theme';
+import { HomeStackParamList } from '../navigation';
 
 type NavProp = NativeStackNavigationProp<HomeStackParamList, 'HomeList'>;
 
 export default function HomeScreen() {
+  const navigation = useNavigation<NavProp>();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const navigation = useNavigation<NavProp>();
   const [loading, setLoading] = useState(true);
 
   useFocusEffect(
@@ -32,27 +34,28 @@ export default function HomeScreen() {
     setTransactions(await getTransactions());
   }
 
-  function handlePress(transaction: Transaction) {
-    navigation.navigate('EditTransaction', { transaction });
+  function handleEdit(id: number) {
+    navigation.navigate('EditTransaction', { transactionId: id });
   }
+
+  if (loading) return <LoadingSpinner />;
 
   const balance = transactions.reduce(
     (sum, t) => sum + (t.type === 'income' ? t.amount : -t.amount),
     0
   );
-
   const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c]));
-
-  if (loading) {
-    return <LoadingSpinner />;
-  }
 
   return (
     <View style={styles.container}>
       <View style={styles.balanceCard}>
-        <Text style={styles.balanceLabel}>Current Balance</Text>
-        <Text style={styles.balanceValue}>KES {balance.toLocaleString()}</Text>
+        <Text style={styles.balanceLabel}>CURRENT BALANCE</Text>
+        <Text style={styles.balanceValue}>
+          KES {balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+        </Text>
       </View>
+      <ZigzagEdge fill={colors.ink} />
+
       <FlatList
         data={transactions}
         keyExtractor={(item) => String(item.id)}
@@ -61,12 +64,12 @@ export default function HomeScreen() {
             transaction={item}
             category={categoryMap[item.categoryId]}
             onDelete={handleDelete}
-            onPress={handlePress}
+            onPress={handleEdit}
           />
         )}
         ListEmptyComponent={
           <EmptyState
-            emoji="💸"
+            emoji="🧾"
             title="No transactions yet"
             subtitle="Tap Add below to record your first income or expense."
           />
@@ -77,9 +80,8 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  balanceCard: { padding: 20, backgroundColor: '#111827' },
-  balanceLabel: { color: '#9ca3af', fontSize: 13 },
-  balanceValue: { color: '#fff', fontSize: 28, fontWeight: '700', marginTop: 4 },
-  empty: { textAlign: 'center', marginTop: 40, color: '#999' },
+  container: { flex: 1, backgroundColor: colors.paper },
+  balanceCard: { padding: 20, paddingBottom: 28, backgroundColor: colors.ink },
+  balanceLabel: { fontFamily: fonts.mono, color: '#9CA3AF', fontSize: 11, letterSpacing: 1.5 },
+  balanceValue: { fontFamily: fonts.display, color: colors.white, fontSize: 32, marginTop: 6 },
 });
