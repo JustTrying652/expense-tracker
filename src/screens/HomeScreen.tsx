@@ -19,6 +19,9 @@ export default function HomeScreen() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
+  const [dateFilter, setDateFilter] = useState<DateFilter>('all');
 
   useFocusEffect(
     useCallback(() => {
