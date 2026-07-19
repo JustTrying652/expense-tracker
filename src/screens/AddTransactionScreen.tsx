@@ -80,8 +80,8 @@ export default function AddTransactionScreen() {
   }
 
   async function handleSave() {
-    const parsed = parseFloat(amount);
-    if (!parsed || parsed <= 0) {
+    const parsed = parseAmount(amount);
+    if (!parsed) {
       showAlert('Invalid amount', 'Enter an amount greater than 0.');
       return;
     }
