@@ -49,6 +49,38 @@ export default function HomeScreen() {
     0
   );
   const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c]));
+  function matchesDateFilter(dateStr: string): boolean {
+    if (dateFilter === 'all') return true;
+    const txDate = new Date(dateStr);
+    const now = new Date();
+
+    if (dateFilter === 'thisMonth') {
+      return txDate.getFullYear() === now.getFullYear() && txDate.getMonth() === now.getMonth();
+    }
+    if (dateFilter === 'lastMonth') {
+      const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      return txDate.getFullYear() === lastMonth.getFullYear() && txDate.getMonth() === lastMonth.getMonth();
+    }
+    if (dateFilter === 'last3Months') {
+      const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+      return txDate >= threeMonthsAgo;
+    }
+    return true;
+  }
+
+  const filteredTransactions = transactions.filter((t) => {
+    if (typeFilter !== 'all' && t.type !== typeFilter) return false;
+    if (!matchesDateFilter(t.date)) return false;
+
+    if (search.trim()) {
+      const query = search.trim().toLowerCase();
+      const categoryName = categoryMap[t.categoryId]?.name?.toLowerCase() ?? '';
+      const note = t.note?.toLowerCase() ?? '';
+      if (!categoryName.includes(query) && !note.includes(query)) return false;
+    }
+
+    return true;
+  });
 
   return (
     <View style={styles.container}>
