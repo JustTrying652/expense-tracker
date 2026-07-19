@@ -121,6 +121,7 @@ export default function AddTransactionScreen() {
 
     setAmount('');
     setNote('');
+    setDate(new Date());
     setRepeatMonthly(false);
 
     if (type === 'expense') {
