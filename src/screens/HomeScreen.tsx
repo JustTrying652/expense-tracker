@@ -121,26 +121,6 @@ export default function HomeScreen() {
           />
         }
       />
-
-      <FlatList
-        data={transactions}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }) => (
-          <TransactionItem
-            transaction={item}
-            category={categoryMap[item.categoryId]}
-            onDelete={handleDelete}
-            onPress={handleEdit}
-          />
-        )}
-        ListEmptyComponent={
-          <EmptyState
-            emoji="🧾"
-            title="No transactions yet"
-            subtitle="Tap Add below to record your first income or expense."
-          />
-        }
-      />
     </View>
   );
 }
