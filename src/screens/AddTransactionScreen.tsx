@@ -49,6 +49,7 @@ export default function AddTransactionScreen() {
             setCategoryId(existing.categoryId);
             setAmount(String(existing.amount));
             setNote(existing.note ?? '');
+            setDate(new Date(existing.date));
           }
           setLoaded(true);
         } else {
