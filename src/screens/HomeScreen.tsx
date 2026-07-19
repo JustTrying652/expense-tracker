@@ -87,7 +87,7 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.balanceCard}>
-        <Text style={styles.balanceLabel}>CURRENT BALANCE</Text>
+        <Text style={styles.balanceLabel}>{isFiltered ? 'FILTERED TOTAL' : 'CURRENT BALANCE'}</Text>
         <Text style={styles.balanceValue}>
           KES {balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
         </Text>
