@@ -16,7 +16,7 @@ import { HomeStackParamList } from '../navigation';
 import { colors, fonts, spacing } from '../theme';
 import LoadingSpinner from '../components/LoadingSpinner';
 import DateTimePicker from '@react-native-community/datetimepicker';
-
+import { parseAmount } from '../utils/parseAmount';
 
 type EditRouteProp = RouteProp<HomeStackParamList, 'EditTransaction'>;
 
