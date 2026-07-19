@@ -33,6 +33,8 @@ export default function AddTransactionScreen() {
   const [note, setNote] = useState('');
   const [loaded, setLoaded] = useState(!isEditMode);
   const [repeatMonthly, setRepeatMonthly] = useState(false);
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
