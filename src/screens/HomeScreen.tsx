@@ -10,6 +10,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ZigzagEdge from '../components/ZigzagEdge';
 import { colors, fonts } from '../theme';
 import { HomeStackParamList } from '../navigation';
+import SearchFilterBar, { TypeFilter, DateFilter } from '../components/SearchFilterBar';
 
 type NavProp = NativeStackNavigationProp<HomeStackParamList, 'HomeList'>;
 
