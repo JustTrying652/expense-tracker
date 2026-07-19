@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { useFocusEffect, useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import {
   getCategories,
@@ -15,6 +15,7 @@ import { showAlert } from '../utils/alert';
 import { HomeStackParamList } from '../navigation';
 import { colors, fonts, spacing } from '../theme';
 import LoadingSpinner from '../components/LoadingSpinner';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 
 type EditRouteProp = RouteProp<HomeStackParamList, 'EditTransaction'>;
