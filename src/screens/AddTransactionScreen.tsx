@@ -95,7 +95,7 @@ export default function AddTransactionScreen() {
       amount: parsed,
       categoryId,
       note: note.trim(),
-      date: new Date().toISOString(),
+      date: date.toISOString(),
     };
 
     if (isEditMode) {
