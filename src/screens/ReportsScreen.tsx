@@ -31,11 +31,16 @@ export default function ReportsScreen() {
 
   const now = new Date();
   const isCurrentMonth = viewDate.getFullYear() === now.getFullYear() && viewDate.getMonth() === now.getMonth();
+  const [prevTransactions, setPrevTransactions] = useState<Transaction[]>([]);
 
   useFocusEffect(
     useCallback(() => {
       (async () => {
         setTransactions(await getTransactionsByMonth(viewDate.getFullYear(), viewDate.getMonth() + 1));
+
+        const prevDate = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1);
+        setPrevTransactions(await getTransactionsByMonth(prevDate.getFullYear(), prevDate.getMonth() + 1));
+
         setCategories(await getCategories());
         setBudgets(await getBudgets());
         setMonthlyTotals(await getMonthlyTotals(6));
@@ -50,6 +55,16 @@ export default function ReportsScreen() {
   function goToNextMonth() {
     setViewDate((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
   }
+  function formatDelta(current: number, previous: number): { text: string; isIncrease: boolean } | null {
+  if (previous === 0) {
+    if (current === 0) return null;
+    return { text: 'NEW', isIncrease: true };
+  }
+  const pctChange = ((current - previous) / previous) * 100;
+  const rounded = Math.round(Math.abs(pctChange));
+  const isIncrease = pctChange > 0;
+  return { text: `${isIncrease ? '▲' : '▼'} ${rounded}%`, isIncrease };
+}
 
   const monthLabel = `${viewDate.toLocaleString('default', { month: 'long' })} ${viewDate.getFullYear()}`;
 
@@ -65,7 +80,32 @@ export default function ReportsScreen() {
     .forEach((t) => {
       expenseByCategory[t.categoryId] = (expenseByCategory[t.categoryId] ?? 0) + t.amount;
     });
+  const prevTotalIncome = prevTransactions.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+  const prevTotalExpense = prevTransactions.filter((t) => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
 
+  const prevExpenseByCategory: Record<number, number> = {};
+  prevTransactions
+    .filter((t) => t.type === 'expense')
+    .forEach((t) => {
+      prevExpenseByCategory[t.categoryId] = (prevExpenseByCategory[t.categoryId] ?? 0) + t.amount;
+    });
+
+  const incomeDelta = formatDelta(totalIncome, prevTotalIncome);
+  const expenseDelta = formatDelta(totalExpense, prevTotalExpense);
+
+  // Union of categories with spend in either month, sorted by current-month spend descending
+  const allCategoryIds = new Set([
+    ...Object.keys(expenseByCategory).map(Number),
+    ...Object.keys(prevExpenseByCategory).map(Number),
+  ]);
+  const categoryComparisons = Array.from(allCategoryIds)
+    .map((catId) => ({
+      catId,
+      current: expenseByCategory[catId] ?? 0,
+      previous: prevExpenseByCategory[catId] ?? 0,
+    }))
+    .filter((c) => c.current > 0) // only show categories with spend this month
+    .sort((a, b) => b.current - a.current);
   const pieData = Object.entries(expenseByCategory).map(([catId, amount]) => {
     const cat = categoryMap[Number(catId)];
     return {
@@ -108,12 +148,22 @@ export default function ReportsScreen() {
           <Text style={[styles.summaryValue, { color: colors.stampGreen }]}>
             {totalIncome.toLocaleString()}
           </Text>
+          {incomeDelta && (
+            <Text style={[styles.deltaText, { color: incomeDelta.isIncrease ? colors.stampGreen : colors.receiptRed }]}>
+              {incomeDelta.text} vs last month
+            </Text>
+          )}
         </View>
         <View style={[styles.summaryCard, { borderColor: colors.receiptRed }]}>
           <Text style={styles.summaryLabel}>EXPENSES</Text>
           <Text style={[styles.summaryValue, { color: colors.receiptRed }]}>
             {totalExpense.toLocaleString()}
           </Text>
+          {expenseDelta && (
+            <Text style={[styles.deltaText, { color: expenseDelta.isIncrease ? colors.receiptRed : colors.stampGreen }]}>
+              {expenseDelta.text} vs last month
+            </Text>
+          )}
         </View>
       </View>
 
@@ -131,7 +181,27 @@ export default function ReportsScreen() {
       ) : (
         <EmptyState emoji="🧾" title="No expenses this month" subtitle="Your category breakdown will appear here once you add some." />
       )}
-
+      {categoryComparisons.length > 0 && (
+        <>
+          <Text style={styles.sectionTitle}>VS LAST MONTH</Text>
+          {categoryComparisons.map(({ catId, current, previous }) => {
+            const cat = categoryMap[catId];
+            const delta = formatDelta(current, previous);
+            return (
+              <View key={catId} style={styles.compareRow}>
+                <View style={[styles.compareDot, { backgroundColor: cat?.color ?? colors.ash }]} />
+                <Text style={styles.compareName}>{cat?.name ?? 'Other'}</Text>
+                <Text style={styles.compareAmount}>{current.toLocaleString()}</Text>
+                {delta && (
+                  <Text style={[styles.compareDelta, { color: delta.isIncrease ? colors.receiptRed : colors.stampGreen }]}>
+                    {delta.text}
+                  </Text>
+                )}
+              </View>
+            );
+          })}
+        </>
+      )}
       {budgets.length > 0 && (
         <>
           <Text style={styles.sectionTitle}>BUDGET PROGRESS</Text>
@@ -171,4 +241,10 @@ const styles = StyleSheet.create({
   summaryLabel: { fontFamily: fonts.mono, fontSize: 10, color: colors.ash, letterSpacing: 1 },
   summaryValue: { fontFamily: fonts.monoBold, fontSize: 18, marginTop: 4 },
   sectionTitle: { fontFamily: fonts.displayMedium, fontSize: 13, color: colors.ink, letterSpacing: 0.5, marginBottom: 12, marginTop: 8 },
+  deltaText: { fontFamily: fonts.mono, fontSize: 10, marginTop: 4, letterSpacing: 0.3 },
+  compareRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#EDE8DD' },
+  compareDot: { width: 8, height: 8, borderRadius: 4, marginRight: 10 },
+  compareName: { flex: 1, fontFamily: fonts.displayMedium, fontSize: 13, color: colors.ink },
+  compareAmount: { fontFamily: fonts.mono, fontSize: 12, color: colors.ash, marginRight: 10 },
+  compareDelta: { fontFamily: fonts.monoBold, fontSize: 11, width: 55, textAlign: 'right' },
 });
