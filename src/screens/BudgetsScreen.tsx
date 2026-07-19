@@ -6,6 +6,7 @@ import { Category, Budget } from '../types';
 import { showAlert } from '../utils/alert';
 import { colors, fonts, spacing } from '../theme';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { parseAmount } from '../utils/parseAmount';
 
 export default function BudgetsScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -29,8 +30,8 @@ export default function BudgetsScreen() {
   );
 
   async function handleSave(categoryId: number) {
-    const value = parseFloat(inputs[categoryId]);
-    if (!value || value <= 0) {
+    const value = parseAmount(inputs[categoryId]);
+    if (!value) {
       showAlert('Invalid amount', 'Enter a limit greater than 0.');
       return;
     }
