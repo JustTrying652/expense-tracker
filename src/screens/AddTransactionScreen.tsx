@@ -180,6 +180,42 @@ export default function AddTransactionScreen() {
           placeholder="0.00"
           placeholderTextColor={colors.ash}
         />
+        <Text style={styles.label}>DATE</Text>
+        {Platform.OS === 'web' ? (
+          <input
+            type="date"
+            value={date.toISOString().split('T')[0]}
+            onChange={(e: any) => {
+              if (e.target.value) {
+                // Construct in local time, not UTC midnight, to avoid the date
+                // silently shifting a day depending on the user's timezone offset.
+                const [y, m, d] = e.target.value.split('-').map(Number);
+                setDate(new Date(y, m - 1, d));
+              }
+            }}
+            style={webDateInputStyle}
+          />
+        ) : (
+          <>
+            <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
+              <Text style={{ fontFamily: fonts.mono, fontSize: 14, color: colors.ink }}>
+                {date.toDateString()}
+              </Text>
+            </TouchableOpacity>
+            {showDatePicker && (
+              <DateTimePicker
+                value={date}
+                mode="date"
+                display="default"
+                maximumDate={new Date()}
+                onChange={(event, selectedDate) => {
+                  setShowDatePicker(false);
+                  if (selectedDate) setDate(selectedDate);
+                }}
+              />
+            )}
+          </>
+        )}
 
         <Text style={styles.label}>CATEGORY</Text>
         <View style={styles.chipRow}>
@@ -229,6 +265,19 @@ export default function AddTransactionScreen() {
     </ScrollView>
   );
 }
+
+const webDateInputStyle = {
+  borderWidth: 1.5,
+  borderColor: '#D9D3C4',
+  borderRadius: 8,
+  padding: 12,
+  fontFamily: fonts.mono,
+  fontSize: 14,
+  color: colors.ink,
+  backgroundColor: colors.white,
+  width: '100%',
+  boxSizing: 'border-box' as const,
+};
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
