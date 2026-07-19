@@ -44,10 +44,8 @@ export default function HomeScreen() {
 
   if (loading) return <LoadingSpinner />;
 
-  const balance = transactions.reduce(
-    (sum, t) => sum + (t.type === 'income' ? t.amount : -t.amount),
-    0
-  );
+  
+  const isFiltered = search.trim() !== '' || typeFilter !== 'all' || dateFilter !== 'all';
   const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c]));
   function matchesDateFilter(dateStr: string): boolean {
     if (dateFilter === 'all') return true;
@@ -81,6 +79,10 @@ export default function HomeScreen() {
 
     return true;
   });
+  const balance = filteredTransactions.reduce(
+    (sum, t) => sum + (t.type === 'income' ? t.amount : -t.amount),
+    0
+  );
 
   return (
     <View style={styles.container}>
@@ -91,6 +93,34 @@ export default function HomeScreen() {
         </Text>
       </View>
       <ZigzagEdge fill={colors.ink} />
+      <SearchFilterBar
+        search={search}
+        onSearchChange={setSearch}
+        typeFilter={typeFilter}
+        onTypeFilterChange={setTypeFilter}
+        dateFilter={dateFilter}
+        onDateFilterChange={setDateFilter}
+      />
+
+      <FlatList
+        data={filteredTransactions}
+        keyExtractor={(item) => String(item.id)}
+        renderItem={({ item }) => (
+          <TransactionItem
+            transaction={item}
+            category={categoryMap[item.categoryId]}
+            onDelete={handleDelete}
+            onPress={handleEdit}
+          />
+        )}
+        ListEmptyComponent={
+          <EmptyState
+            emoji={isFiltered ? '🔍' : '🧾'}
+            title={isFiltered ? 'No matches' : 'No transactions yet'}
+            subtitle={isFiltered ? 'Try a different search or filter.' : 'Tap Add below to record your first income or expense.'}
+          />
+        }
+      />
 
       <FlatList
         data={transactions}
