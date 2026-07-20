@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Transaction, Category, Budget, RecurringRule, DEFAULT_CATEGORIES } from '../types';
+import { Transaction, Category, Budget, RecurringRule, SavingsGoal, SavingsContribution, DEFAULT_CATEGORIES } from '../types';
 
 const CATEGORIES_KEY = 'categories';
 const TRANSACTIONS_KEY = 'transactions';
