@@ -5,6 +5,7 @@ import AddTransactionScreen from '../screens/AddTransactionScreen';
 import ReportsScreen from '../screens/ReportsScreen';
 import BudgetsScreen from '../screens/BudgetsScreen';
 import RecurringScreen from '../screens/RecurringScreen';
+import GoalsScreen from '../screens/GoalsScreen';
 
 export type HomeStackParamList = {
   HomeList: undefined;
@@ -30,6 +31,7 @@ export default function RootNavigator() {
       <Tab.Screen name="Add" component={AddTransactionScreen} options={{ title: 'Add' }} />
       <Tab.Screen name="Budgets" component={BudgetsScreen} options={{ title: 'Budgets' }} />
       <Tab.Screen name="Recurring" component={RecurringScreen} options={{ title: 'Recurring' }} />
+      <Tab.Screen name="Goals" component={GoalsScreen} options={{ title: 'Goals' }} />
       <Tab.Screen name="Reports" component={ReportsScreen} options={{ title: 'Reports' }} />
     </Tab.Navigator>
   );
