@@ -1,51 +1,78 @@
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import { BarChart } from 'react-native-chart-kit';
+import { View, Text, StyleSheet } from 'react-native';
 import { MonthlyTotal } from '../db/storage';
 import { colors, fonts } from '../theme';
 import EmptyState from './EmptyState';
-
-const screenWidth = Dimensions.get('window').width;
 
 interface Props {
   data: MonthlyTotal[];
 }
 
 const MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MAX_BAR_HEIGHT = 140;
 
 export default function TrendChart({ data }: Props) {
-  const labels = data.map((d) => MONTH_ABBR[d.month - 1]);
-  const expenseValues = data.map((d) => d.expense);
   const hasAnyData = data.some((d) => d.income > 0 || d.expense > 0);
 
   if (!hasAnyData) {
-    return <EmptyState emoji="📈" title="Not enough history yet" subtitle="Your monthly trend will build up as you use the app." />;
+    return (
+      <EmptyState
+        emoji="📈"
+        title="Not enough history yet"
+        subtitle="Your monthly trend will build up as you use the app."
+      />
+    );
   }
+
+  const maxValue = Math.max(...data.map((d) => Math.max(d.income, d.expense)), 1);
 
   return (
     <View>
-      <BarChart
-        data={{ labels, datasets: [{ data: expenseValues }] }}
-        width={screenWidth - 32}
-        height={200}
-        yAxisLabel=""
-        yAxisSuffix=""
-        fromZero
-        chartConfig={{
-          backgroundColor: colors.paper,
-          backgroundGradientFrom: colors.paper,
-          backgroundGradientTo: colors.paper,
-          decimalPlaces: 0,
-          color: () => colors.receiptRed,
-          labelColor: () => colors.ash,
-          barPercentage: 0.6,
-        }}
-        style={{ borderRadius: 8 }}
-      />
-      <Text style={styles.caption}>MONTHLY EXPENSES (KES)</Text>
+      <View style={styles.legend}>
+        <View style={styles.legendItem}>
+          <View style={[styles.legendDot, { backgroundColor: colors.stampGreen }]} />
+          <Text style={styles.legendText}>INCOME</Text>
+        </View>
+        <View style={styles.legendItem}>
+          <View style={[styles.legendDot, { backgroundColor: colors.receiptRed }]} />
+          <Text style={styles.legendText}>EXPENSE</Text>
+        </View>
+      </View>
+
+      <View style={styles.chartArea}>
+        {data.map((d, i) => {
+          const incomeHeight = (d.income / maxValue) * MAX_BAR_HEIGHT;
+          const expenseHeight = (d.expense / maxValue) * MAX_BAR_HEIGHT;
+
+          return (
+            <View key={i} style={styles.column}>
+              <View style={styles.barPair}>
+                <View style={[styles.bar, { height: Math.max(incomeHeight, 2), backgroundColor: colors.stampGreen }]} />
+                <View style={[styles.bar, { height: Math.max(expenseHeight, 2), backgroundColor: colors.receiptRed }]} />
+              </View>
+              <Text style={styles.monthLabel}>{MONTH_ABBR[d.month - 1]}</Text>
+            </View>
+          );
+        })}
+      </View>
+      <View style={styles.baseline} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  caption: { fontFamily: fonts.mono, textAlign: 'center', fontSize: 10, color: colors.ash, marginTop: 6, letterSpacing: 1 },
+  legend: { flexDirection: 'row', justifyContent: 'center', gap: 20, marginBottom: 14 },
+  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  legendDot: { width: 8, height: 8, borderRadius: 4 },
+  legendText: { fontFamily: fonts.mono, fontSize: 10, color: colors.ash, letterSpacing: 0.5 },
+  chartArea: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-around',
+    height: MAX_BAR_HEIGHT + 10,
+  },
+  column: { alignItems: 'center', flex: 1 },
+  barPair: { flexDirection: 'row', alignItems: 'flex-end', gap: 3, height: MAX_BAR_HEIGHT },
+  bar: { width: 10, borderRadius: 2 },
+  monthLabel: { fontFamily: fonts.mono, fontSize: 10, color: colors.ash, marginTop: 6, letterSpacing: 0.5 },
+  baseline: { height: 1.5, backgroundColor: '#D9D3C4', marginTop: -1 },
 });
