@@ -203,3 +203,34 @@ export async function generateDueRecurringTransactions(): Promise<number> {
   await writeJson(RECURRING_KEY, updatedRules);
   return generatedCount;
 }
+
+export async function getSavingsGoals(): Promise<SavingsGoal[]> {
+  return readJson<SavingsGoal[]>(GOALS_KEY, []);
+}
+
+export async function addSavingsGoal(goal: Omit<SavingsGoal, 'id'>): Promise<void> {
+  const all = await readJson<SavingsGoal[]>(GOALS_KEY, []);
+  const nextId = all.length > 0 ? Math.max(...all.map((g) => g.id)) + 1 : 1;
+  all.push({ ...goal, id: nextId });
+  await writeJson(GOALS_KEY, all);
+}
+
+export async function deleteSavingsGoal(id: number): Promise<void> {
+  const goals = await readJson<SavingsGoal[]>(GOALS_KEY, []);
+  await writeJson(GOALS_KEY, goals.filter((g) => g.id !== id));
+
+  // Contributions tied to a deleted goal are meaningless orphans — clean them up too.
+  const contributions = await readJson<SavingsContribution[]>(CONTRIBUTIONS_KEY, []);
+  await writeJson(CONTRIBUTIONS_KEY, contributions.filter((c) => c.goalId !== id));
+}
+
+export async function getSavingsContributions(): Promise<SavingsContribution[]> {
+  return readJson<SavingsContribution[]>(CONTRIBUTIONS_KEY, []);
+}
+
+export async function addSavingsContribution(contribution: Omit<SavingsContribution, 'id'>): Promise<void> {
+  const all = await readJson<SavingsContribution[]>(CONTRIBUTIONS_KEY, []);
+  const nextId = all.length > 0 ? Math.max(...all.map((c) => c.id)) + 1 : 1;
+  all.push({ ...contribution, id: nextId });
+  await writeJson(CONTRIBUTIONS_KEY, all);
+}
