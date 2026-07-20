@@ -31,6 +31,20 @@ export interface RecurringRule {
   lastGeneratedMonth: string; // 'YYYY-MM' — the most recent month this rule has produced a transaction for
 }
 
+export interface SavingsGoal {
+  id: number;
+  name: string;
+  targetAmount: number;
+  targetDate?: string; // ISO date string, optional
+}
+
+export interface SavingsContribution {
+  id: number;
+  goalId: number;
+  amount: number;
+  date: string; // ISO
+}
+
 export const DEFAULT_CATEGORIES: Omit<Category, 'id'>[] = [
   { name: 'Salary', type: 'income', color: '#22c55e' },
   { name: 'Business', type: 'income', color: '#16a34a' },
