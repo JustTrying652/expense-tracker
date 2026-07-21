@@ -180,7 +180,7 @@ export default function AddTransactionScreen() {
           placeholder="0.00"
           placeholderTextColor={colors.ash}
         />
-        <Text style={styles.label}>DATE</Text>
+        <Text style={styles.label}></Text>
         {Platform.OS === 'web' ? (
           <input
             type="date"
