@@ -244,3 +244,29 @@ export interface RecurringSuggestion {
   dayOfMonth: number;
   signature: string;
 }
+
+function mode(nums: number[]): number {
+  const counts: Record<number, number> = {};
+  let best = nums[0];
+  let bestCount = 0;
+  nums.forEach((n) => {
+    counts[n] = (counts[n] ?? 0) + 1;
+    if (counts[n] > bestCount) {
+      bestCount = counts[n];
+      best = n;
+    }
+  });
+  return best;
+}
+
+export async function getDismissedSuggestions(): Promise<string[]> {
+  return readJson<string[]>(DISMISSED_SUGGESTIONS_KEY, []);
+}
+
+export async function dismissSuggestion(signature: string): Promise<void> {
+  const all = await readJson<string[]>(DISMISSED_SUGGESTIONS_KEY, []);
+  if (!all.includes(signature)) {
+    all.push(signature);
+    await writeJson(DISMISSED_SUGGESTIONS_KEY, all);
+  }
+}
