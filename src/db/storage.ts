@@ -270,3 +270,59 @@ export async function dismissSuggestion(signature: string): Promise<void> {
     await writeJson(DISMISSED_SUGGESTIONS_KEY, all);
   }
 }
+
+
+export async function detectRecurringCandidates(): Promise<RecurringSuggestion[]> {
+  const transactions = await getTransactions();
+  const rules = await getRecurringRules();
+  const dismissed = await getDismissedSuggestions();
+
+  const groups: Record<string, Transaction[]> = {};
+  transactions.forEach((t) => {
+    const key = `${t.type}:${t.categoryId}`;
+    groups[key] = groups[key] ?? [];
+    groups[key].push(t);
+  });
+
+  const suggestions: RecurringSuggestion[] = [];
+
+  for (const key of Object.keys(groups)) {
+    const txs = groups[key];
+    if (txs.length < 2) continue;
+
+    // Cluster transactions in this category by similar amount (within 15%)
+    const clusters: Transaction[][] = [];
+    txs.forEach((t) => {
+      const match = clusters.find((cluster) => {
+        const avg = cluster.reduce((s, c) => s + c.amount, 0) / cluster.length;
+        return Math.abs(t.amount - avg) / avg <= 0.15;
+      });
+      if (match) match.push(t);
+      else clusters.push([t]);
+    });
+
+    for (const cluster of clusters) {
+      if (cluster.length < 2) continue;
+
+      const monthsSet = new Set(cluster.map((t) => t.date.slice(0, 7)));
+      if (monthsSet.size < 2) continue; // must span at least 2 different months
+
+      const categoryId = cluster[0].categoryId;
+      const type = cluster[0].type;
+      const avgAmount = Math.round(cluster.reduce((s, c) => s + c.amount, 0) / cluster.length);
+      const dayOfMonth = mode(cluster.map((t) => new Date(t.date).getDate()));
+      const signature = `${type}:${categoryId}:${Math.round(avgAmount / 50) * 50}`;
+
+      if (dismissed.includes(signature)) continue;
+
+      const alreadyRecurring = rules.some(
+        (r) => r.categoryId === categoryId && r.type === type && Math.abs(r.amount - avgAmount) / avgAmount <= 0.15
+      );
+      if (alreadyRecurring) continue;
+
+      suggestions.push({ categoryId, type, approxAmount: avgAmount, occurrences: cluster.length, dayOfMonth, signature });
+    }
+  }
+
+  return suggestions;
+}
