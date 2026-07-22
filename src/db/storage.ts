@@ -235,3 +235,12 @@ export async function addSavingsContribution(contribution: Omit<SavingsContribut
   all.push({ ...contribution, id: nextId });
   await writeJson(CONTRIBUTIONS_KEY, all);
 }
+
+export interface RecurringSuggestion {
+  categoryId: number;
+  type: Transaction['type'];
+  approxAmount: number;
+  occurrences: number;
+  dayOfMonth: number;
+  signature: string;
+}
