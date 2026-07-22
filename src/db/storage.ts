@@ -8,6 +8,7 @@ const ONBOARDING_KEY = 'hasOnboarded';
 const RECURRING_KEY = 'recurring';
 const GOALS_KEY = 'savingsGoals';
 const CONTRIBUTIONS_KEY = 'savingsContributions';
+const DISMISSED_SUGGESTIONS_KEY = 'dismissedRecurringSuggestions';
 
 async function readJson<T>(key: string, fallback: T): Promise<T> {
   const raw = await AsyncStorage.getItem(key);
