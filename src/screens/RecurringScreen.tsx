@@ -6,6 +6,8 @@ import { RecurringRule, Category } from '../types';
 import { colors, fonts, spacing } from '../theme';
 import LoadingSpinner from '../components/LoadingSpinner';
 import EmptyState from '../components/EmptyState';
+import { detectRecurringCandidates, dismissSuggestion, RecurringSuggestion } from '../db/storage';
+import { addRecurringRule } from '../db/storage';
 
 export default function RecurringScreen() {
   const [rules, setRules] = useState<RecurringRule[]>([]);
