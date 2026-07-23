@@ -77,6 +77,38 @@ export default function RecurringScreen() {
         data={rules}
         keyExtractor={(r) => String(r.id)}
         contentContainerStyle={{ padding: spacing.md }}
+        ListHeaderComponent={
+          suggestions.length > 0 ? (
+            <View style={{ marginBottom: 16 }}>
+              <Text style={styles.sectionTitle}>LOOKS RECURRING</Text>
+              {suggestions.map((s) => {
+                const cat = categoryMap[s.categoryId];
+                return (
+                  <View key={s.signature} style={styles.suggestionCard}>
+                    <View style={styles.suggestionTop}>
+                      <Text style={styles.categoryName}>{cat?.name ?? 'Unknown'}</Text>
+                      <Text style={[styles.amount, { color: s.type === 'income' ? colors.stampGreen : colors.receiptRed }]}>
+                        {s.type === 'income' ? '+' : '-'}{s.approxAmount.toLocaleString()}
+                      </Text>
+                    </View>
+                    <Text style={styles.suggestionHint}>
+                      SEEN {s.occurrences}× · AROUND DAY {s.dayOfMonth} OF EACH MONTH
+                    </Text>
+                    <View style={styles.suggestionActions}>
+                      <TouchableOpacity style={styles.acceptBtn} onPress={() => handleAcceptSuggestion(s)}>
+                        <Text style={styles.acceptBtnText}>TRACK AS RECURRING</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity style={styles.dismissBtn} onPress={() => handleDismissSuggestion(s)}>
+                        <Text style={styles.dismissBtnText}>DISMISS</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                );
+              })}
+              <Text style={styles.sectionTitle}>ACTIVE RULES</Text>
+            </View>
+          ) : null
+        }
         renderItem={({ item }) => {
           const cat = categoryMap[item.categoryId];
           const isIncome = item.type === 'income';
@@ -102,7 +134,7 @@ export default function RecurringScreen() {
           <EmptyState
             emoji="🔁"
             title="No recurring transactions"
-            subtitle="Check 'Repeat monthly' when adding a transaction to set one up."
+            subtitle="Check 'Repeat monthly' when adding a transaction, or accept a suggestion above."
           />
         }
       />
@@ -134,4 +166,13 @@ const styles = StyleSheet.create({
   amount: { fontFamily: fonts.monoBold, fontSize: 15 },
   stopBtn: { marginTop: 8, paddingVertical: 4, paddingHorizontal: 10, borderRadius: 5, borderWidth: 1, borderColor: colors.receiptRed },
   stopBtnText: { fontFamily: fonts.displayMedium, fontSize: 10, color: colors.receiptRed, letterSpacing: 0.5 },
+  sectionTitle: { fontFamily: fonts.displayMedium, fontSize: 12, color: colors.ash, letterSpacing: 1, marginBottom: 10 },
+  suggestionCard: { backgroundColor: colors.white, borderRadius: 10, padding: 14, marginBottom: 10, borderWidth: 1.5, borderColor: colors.kangaGold },
+  suggestionTop: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
+  suggestionHint: { fontFamily: fonts.mono, fontSize: 10, color: colors.ash, letterSpacing: 0.3, marginBottom: 10 },
+  suggestionActions: { flexDirection: 'row', gap: 8 },
+  acceptBtn: { flex: 1, backgroundColor: colors.kangaGold, paddingVertical: 8, borderRadius: 6, alignItems: 'center' },
+  acceptBtnText: { color: colors.white, fontFamily: fonts.displayMedium, fontSize: 10, letterSpacing: 0.5 },
+  dismissBtn: { paddingVertical: 8, paddingHorizontal: 14, borderRadius: 6, borderWidth: 1, borderColor: '#D9D3C4' },
+  dismissBtnText: { color: colors.ash, fontFamily: fonts.displayMedium, fontSize: 10, letterSpacing: 0.5 },
 });
