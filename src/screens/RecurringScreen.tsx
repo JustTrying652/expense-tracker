@@ -13,6 +13,7 @@ export default function RecurringScreen() {
   const [rules, setRules] = useState<RecurringRule[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [suggestions, setSuggestions] = useState<RecurringSuggestion[]>([]);
 
   useFocusEffect(
     useCallback(() => {
