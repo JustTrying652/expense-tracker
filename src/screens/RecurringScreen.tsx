@@ -46,6 +46,25 @@ export default function RecurringScreen() {
 
   if (loading) return <LoadingSpinner />;
 
+  async function handleAcceptSuggestion(s: RecurringSuggestion) {
+    const now = new Date();
+    await addRecurringRule({
+      type: s.type,
+      amount: s.approxAmount,
+      categoryId: s.categoryId,
+      note: '',
+      dayOfMonth: s.dayOfMonth,
+      lastGeneratedMonth: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`,
+    });
+    setRules(await getRecurringRules());
+    setSuggestions(await detectRecurringCandidates());
+  }
+
+  async function handleDismissSuggestion(s: RecurringSuggestion) {
+    await dismissSuggestion(s.signature);
+    setSuggestions(await detectRecurringCandidates());
+  }
+
   const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c]));
 
   return (
