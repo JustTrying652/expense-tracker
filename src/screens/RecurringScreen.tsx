@@ -20,6 +20,7 @@ export default function RecurringScreen() {
       (async () => {
         setRules(await getRecurringRules());
         setCategories(await getCategories());
+        setSuggestions(await detectRecurringCandidates());
         setLoading(false);
       })();
     }, [])
