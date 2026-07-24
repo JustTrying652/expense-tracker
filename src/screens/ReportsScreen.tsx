@@ -38,6 +38,11 @@ export default function ReportsScreen() {
   const [prevTransactions, setPrevTransactions] = useState<Transaction[]>([]);
   const [goals, setGoals] = useState<SavingsGoal[]>([]);
   const [contributions, setContributions] = useState<SavingsContribution[]>([]);
+  const navigation = useNavigation();
+
+  function goToCategoryOnHome(categoryName: string) {
+    navigation.navigate('Home' as never, { screen: 'HomeList', params: { filterCategoryName: categoryName } } as never);
+  }
 
   useFocusEffect(
     useCallback(() => {
@@ -56,6 +61,8 @@ export default function ReportsScreen() {
       })();
     }, [viewDate])
   );
+
+  
 
   function goToPrevMonth() {
     setViewDate((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1));
@@ -208,14 +215,15 @@ export default function ReportsScreen() {
       ) : (
         <EmptyState emoji="🧾" title="No expenses this month" subtitle="Your category breakdown will appear here once you add some." />
       )}
-      {categoryComparisons.length > 0 && (
-        <>
-          <Text style={styles.sectionTitle}>VS LAST MONTH</Text>
-          {categoryComparisons.map(({ catId, current, previous }) => {
+      {categoryComparisons.map(({ catId, current, previous }) => {
             const cat = categoryMap[catId];
             const delta = formatDelta(current, previous);
             return (
-              <View key={catId} style={styles.compareRow}>
+              <TouchableOpacity
+                key={catId}
+                style={styles.compareRow}
+                onPress={() => cat && goToCategoryOnHome(cat.name)}
+              >
                 <View style={[styles.compareDot, { backgroundColor: cat?.color ?? colors.ash }]} />
                 <Text style={styles.compareName}>{cat?.name ?? 'Other'}</Text>
                 <Text style={styles.compareAmount}>{current.toLocaleString()}</Text>
@@ -224,11 +232,9 @@ export default function ReportsScreen() {
                     {delta.text}
                   </Text>
                 )}
-              </View>
+              </TouchableOpacity>
             );
           })}
-        </>
-      )}
       {budgets.length > 0 && (
         <>
           <Text style={styles.sectionTitle}>BUDGET PROGRESS</Text>
