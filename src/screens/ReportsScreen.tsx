@@ -114,6 +114,17 @@ export default function ReportsScreen() {
     }))
     .filter((c) => c.current > 0) // only show categories with spend this month
     .sort((a, b) => b.current - a.current);
+  
+  const insights = generateInsights({
+    currentTx: transactions,
+    prevTx: prevTransactions,
+    categories,
+    budgets,
+    monthlyTotals,
+    goals,
+    contributions,
+  });
+  
   const pieData = Object.entries(expenseByCategory).map(([catId, amount]) => {
     const cat = categoryMap[Number(catId)];
     return {
