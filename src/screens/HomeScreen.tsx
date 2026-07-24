@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { View, FlatList, Text, StyleSheet } from 'react-native';
 import { useFocusEffect, useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -34,6 +34,13 @@ export default function HomeScreen() {
       })();
     }, [])
   );
+
+  useEffect(() => {
+    if (route.params?.filterCategoryName) {
+      setSearch(route.params.filterCategoryName);
+      navigation.setParams({ filterCategoryName: undefined });
+    }
+  }, [route.params?.filterCategoryName]);
 
   async function handleDelete(id: number) {
     await deleteTransaction(id);
