@@ -1,16 +1,17 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MonthlyTotal } from '../db/storage';
 import { colors, fonts } from '../theme';
 import EmptyState from './EmptyState';
 
 interface Props {
   data: MonthlyTotal[];
+  onSelectMonth?: (year: number, month: number) => void;
 }
 
 const MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const MAX_BAR_HEIGHT = 140;
 
-export default function TrendChart({ data }: Props) {
+export default function TrendChart({ data, onSelectMonth }: Props) {
   const hasAnyData = data.some((d) => d.income > 0 || d.expense > 0);
 
   if (!hasAnyData) {
@@ -44,13 +45,18 @@ export default function TrendChart({ data }: Props) {
           const expenseHeight = (d.expense / maxValue) * MAX_BAR_HEIGHT;
 
           return (
-            <View key={i} style={styles.column}>
+            <TouchableOpacity
+              key={i}
+              style={styles.column}
+              activeOpacity={0.6}
+              onPress={() => onSelectMonth?.(d.year, d.month)}
+            >
               <View style={styles.barPair}>
                 <View style={[styles.bar, { height: Math.max(incomeHeight, 2), backgroundColor: colors.stampGreen }]} />
                 <View style={[styles.bar, { height: Math.max(expenseHeight, 2), backgroundColor: colors.receiptRed }]} />
               </View>
               <Text style={styles.monthLabel}>{MONTH_ABBR[d.month - 1]}</Text>
-            </View>
+            </TouchableOpacity>
           );
         })}
       </View>
