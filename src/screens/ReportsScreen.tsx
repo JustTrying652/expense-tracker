@@ -124,7 +124,7 @@ export default function ReportsScreen() {
     goals,
     contributions,
   });
-  
+
   const pieData = Object.entries(expenseByCategory).map(([catId, amount]) => {
     const cat = categoryMap[Number(catId)];
     return {
@@ -147,6 +147,14 @@ export default function ReportsScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: spacing.md, paddingBottom: spacing.xl }}>
+      {insights.length > 0 && (
+        <View style={{ marginBottom: 20 }}>
+          <Text style={styles.sectionTitle}>THIS MONTH AT A GLANCE</Text>
+          {insights.map((insight, i) => (
+            <InsightCard key={i} insight={insight} />
+          ))}
+        </View>
+      )}
       <View style={styles.monthNav}>
         <TouchableOpacity onPress={goToPrevMonth} style={styles.navBtn}>
           <Text style={styles.navBtnText}>‹</Text>
