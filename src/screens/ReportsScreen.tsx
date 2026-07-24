@@ -9,8 +9,10 @@ import {
   getBudgets,
   getMonthlyTotals,
   MonthlyTotal,
+  getSavingsGoals,
+  getSavingsContributions,
 } from '../db/storage';
-import { Transaction, Category, Budget } from '../types';
+import { Transaction, Category, Budget, SavingsGoal, SavingsContribution } from '../types';
 import { buildReportHtml } from '../utils/pdfTemplate';
 import { showAlert } from '../utils/alert';
 import { colors, fonts, spacing } from '../theme';
@@ -18,6 +20,8 @@ import BudgetProgressBar from '../components/BudgetProgressBar';
 import TrendChart from '../components/TrendChart';
 import EmptyState from '../components/EmptyState';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { generateInsights } from '../utils/insights';
+import InsightCard from '../components/InsightCard';
 
 const screenWidth = Dimensions.get('window').width;
 
