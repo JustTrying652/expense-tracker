@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { View, FlatList, Text, StyleSheet } from 'react-native';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { getTransactions, getCategories, deleteTransaction } from '../db/storage';
 import { Transaction, Category } from '../types';
@@ -13,9 +13,11 @@ import { HomeStackParamList } from '../navigation';
 import SearchFilterBar, { TypeFilter, DateFilter } from '../components/SearchFilterBar';
 
 type NavProp = NativeStackNavigationProp<HomeStackParamList, 'HomeList'>;
+type HomeRouteProp = RouteProp<HomeStackParamList, 'HomeList'>;
 
 export default function HomeScreen() {
   const navigation = useNavigation<NavProp>();
+  const route = useRoute<HomeRouteProp>();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
