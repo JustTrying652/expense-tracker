@@ -36,6 +36,8 @@ export default function ReportsScreen() {
   const now = new Date();
   const isCurrentMonth = viewDate.getFullYear() === now.getFullYear() && viewDate.getMonth() === now.getMonth();
   const [prevTransactions, setPrevTransactions] = useState<Transaction[]>([]);
+  const [goals, setGoals] = useState<SavingsGoal[]>([]);
+  const [contributions, setContributions] = useState<SavingsContribution[]>([]);
 
   useFocusEffect(
     useCallback(() => {
@@ -48,6 +50,8 @@ export default function ReportsScreen() {
         setCategories(await getCategories());
         setBudgets(await getBudgets());
         setMonthlyTotals(await getMonthlyTotals(6));
+        setGoals(await getSavingsGoals());
+        setContributions(await getSavingsContributions());
         setLoading(false);
       })();
     }, [viewDate])
