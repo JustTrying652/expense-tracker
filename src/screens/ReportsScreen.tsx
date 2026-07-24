@@ -250,7 +250,10 @@ export default function ReportsScreen() {
       )}
 
       <Text style={styles.sectionTitle}>6-MONTH TREND</Text>
-      <TrendChart data={monthlyTotals} />
+      <TrendChart
+        data={monthlyTotals}
+        onSelectMonth={(year, month) => setViewDate(new Date(year, month - 1, 1))}
+      />
     </ScrollView>
   );
 }
