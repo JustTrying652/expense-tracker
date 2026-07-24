@@ -8,7 +8,7 @@ import RecurringScreen from '../screens/RecurringScreen';
 import GoalsScreen from '../screens/GoalsScreen';
 
 export type HomeStackParamList = {
-  HomeList: undefined;
+  HomeList: { filterCategoryName?: string } | undefined;
   EditTransaction: { transactionId: number };
 };
 
