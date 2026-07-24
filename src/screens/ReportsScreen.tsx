@@ -40,8 +40,8 @@ export default function ReportsScreen() {
   const [contributions, setContributions] = useState<SavingsContribution[]>([]);
   const navigation = useNavigation();
 
-  function goToCategoryOnHome(categoryName: string) {
-    navigation.navigate('Home' as never, { screen: 'HomeList', params: { filterCategoryName: categoryName } } as never);
+function goToCategoryOnHome(categoryName: string) {
+    (navigation as any).navigate('Home', { screen: 'HomeList', params: { filterCategoryName: categoryName } });
   }
 
   useFocusEffect(
