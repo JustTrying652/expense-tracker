@@ -10,6 +10,8 @@ import GoalsScreen from '../screens/GoalsScreen';
 export type HomeStackParamList = {
   HomeList: { filterCategoryName?: string } | undefined;
   EditTransaction: { transactionId: number };
+  Settings: undefined;
+  PinSetup: { mode: 'create' | 'change' };
 };
 
 const Tab = createBottomTabNavigator();
