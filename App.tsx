@@ -26,15 +26,16 @@ export default function App() {
       await seedCategoriesIfEmpty();
       const onboarded = await getHasOnboarded();
       setShowOnboarding(!onboarded);
+
+      const pinSet = await hasPinSet();
+      setLocked(pinSet);
+
       setReady(true);
 
       if (onboarded) {
         const count = await generateDueRecurringTransactions();
         if (count > 0) {
-          showAlert(
-            'Recurring transactions added',
-            `${count} recurring transaction${count > 1 ? 's were' : ' was'} generated automatically.`
-          );
+          showAlert('Recurring transactions added', `${count} recurring transaction${count > 1 ? 's were' : ' was'} generated automatically.`);
         }
       }
     })();
