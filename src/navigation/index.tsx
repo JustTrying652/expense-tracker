@@ -6,6 +6,8 @@ import ReportsScreen from '../screens/ReportsScreen';
 import BudgetsScreen from '../screens/BudgetsScreen';
 import RecurringScreen from '../screens/RecurringScreen';
 import GoalsScreen from '../screens/GoalsScreen';
+import SettingsScreen from '../screens/SettingsScreen';
+import PinSetupScreen from '../screens/PinSetupScreen';
 
 export type HomeStackParamList = {
   HomeList: { filterCategoryName?: string } | undefined;
