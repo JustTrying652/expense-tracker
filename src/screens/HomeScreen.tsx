@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { View, FlatList, Text, StyleSheet } from 'react-native';
+import { View, FlatList, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useFocusEffect, useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { getTransactions, getCategories, deleteTransaction } from '../db/storage';
@@ -96,10 +96,17 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.balanceCard}>
-        <Text style={styles.balanceLabel}>{isFiltered ? 'FILTERED TOTAL' : 'CURRENT BALANCE'}</Text>
-        <Text style={styles.balanceValue}>
-          KES {balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-        </Text>
+        <View style={styles.balanceTopRow}>
+          <View>
+            <Text style={styles.balanceLabel}>{isFiltered ? 'FILTERED TOTAL' : 'CURRENT BALANCE'}</Text>
+            <Text style={styles.balanceValue}>
+              KES {balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            </Text>
+          </View>
+          <TouchableOpacity onPress={() => (navigation as any).navigate('Settings')}>
+            <Text style={styles.gearIcon}>⚙️</Text>
+          </TouchableOpacity>
+        </View>
       </View>
       <ZigzagEdge fill={colors.ink} />
       <SearchFilterBar
@@ -139,4 +146,6 @@ const styles = StyleSheet.create({
   balanceCard: { padding: 20, paddingBottom: 28, backgroundColor: colors.ink },
   balanceLabel: { fontFamily: fonts.mono, color: '#9CA3AF', fontSize: 11, letterSpacing: 1.5 },
   balanceValue: { fontFamily: fonts.display, color: colors.white, fontSize: 32, marginTop: 6 },
+  balanceTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  gearIcon: { fontSize: 22 },
 });
