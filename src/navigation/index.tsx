@@ -22,6 +22,8 @@ const Stack = createNativeStackNavigator<HomeStackParamList>();
 function HomeStack() {
   return (
     <Stack.Navigator>
+      <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Settings' }} />
+      <Stack.Screen name="PinSetup" component={PinSetupScreen} options={{ title: 'Set PIN' }} />
       <Stack.Screen name="HomeList" component={HomeScreen} options={{ title: 'Transactions' }} />
       <Stack.Screen name="EditTransaction" component={AddTransactionScreen} options={{ title: 'Edit Transaction' }} />
     </Stack.Navigator>
