@@ -47,6 +47,10 @@ export default function App() {
     return <OnboardingScreen onDone={() => setShowOnboarding(false)} />;
   }
 
+  if (locked) {
+    return <PinLockScreen onUnlock={() => setLocked(false)} />;
+  }
+
   return (
     <NavigationContainer>
       <RootNavigator />
