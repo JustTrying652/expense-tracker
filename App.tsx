@@ -6,10 +6,13 @@ import { seedCategoriesIfEmpty, getHasOnboarded, generateDueRecurringTransaction
 import RootNavigator from './src/navigation';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import { showAlert } from './src/utils/alert';
+import { hasPinSet } from './src/utils/pin';
+import PinLockScreen from './src/screens/PinLockScreen';
 
 export default function App() {
   const [ready, setReady] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [locked, setLocked] = useState(false);
 
   const [fontsLoaded] = useFonts({
     SpaceGrotesk_700Bold,
