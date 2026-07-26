@@ -156,7 +156,7 @@ function goToCategoryOnHome(categoryName: string) {
     <ScrollView style={styles.container} contentContainerStyle={{ padding: spacing.md, paddingBottom: spacing.xl }}>
       {insights.length > 0 && (
         <View style={{ marginBottom: 20 }}>
-          <Text style={styles.sectionTitle}>THIS MONTH AT A GLANCE</Text>
+          <Text style={styles.sectionTitle}>THIS MONTH AT A </Text>
           {insights.map((insight, i) => (
             <InsightCard key={i} insight={insight} />
           ))}
